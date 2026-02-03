@@ -1,3 +1,5 @@
+import { ActiveComponent } from "@/types/types";
+
 export default function Overlay({
   isActiveOverlay,
   setIsActiveOverlay,
@@ -5,9 +7,7 @@ export default function Overlay({
 }: {
   isActiveOverlay: boolean;
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsActiveComponent: React.Dispatch<
-    React.SetStateAction<"sidebar" | "addtask" | "stats" | null>
-  >;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
 }) {
   return (
     <div

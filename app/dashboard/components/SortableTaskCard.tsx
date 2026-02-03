@@ -1,6 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import PriorityDot from "./PriorityDot";
+import { Task } from "@/types/types";
+
 export default function SortableTaskCard({ task }: { task: Task }) {
   const {
     setNodeRef,

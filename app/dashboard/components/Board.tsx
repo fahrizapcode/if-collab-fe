@@ -13,12 +13,15 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { useAppDispatch } from "@/store/hooks";
+import { moveTask } from "@/store/boardsSlice";
 
 import { reorder, findColumnByTaskId } from "../helpers";
 import SortableTaskCard from "./SortableTaskCard";
 import DroppableColumn from "./DroppableColumn";
 import Image from "next/image";
 import { useAppSelector } from "@/store/hooks";
+import { ActiveComponent, BoardData, Task } from "@/types/types";
 
 /* =======================
    INITIAL DATA
@@ -28,14 +31,22 @@ import { useAppSelector } from "@/store/hooks";
    MAIN COMPONENT
 ======================= */
 
-export default function Board() {
+export default function Board({
+  setIsActiveOverlay,
+  setIsActiveComponent,
+}: {
+  setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+}) {
   const activeBoard = useAppSelector(
     (state) => state.boards.boards[state.boards.activeBoardId],
   );
+  const dispatch = useAppDispatch();
 
   const [board, setBoard] = useState<BoardData>(activeBoard);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
+  const sourceColumnRef = useRef<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -66,24 +77,30 @@ export default function Board() {
     setActiveTask(board.tasks[taskId]);
 
     const sourceColumn = findColumnByTaskId(board, taskId);
+    sourceColumnRef.current = sourceColumn?.id ?? null;
     setActiveColumnId(sourceColumn?.id ?? null);
+    console.log(event.active);
   }
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     setActiveTask(null);
     setActiveColumnId(null);
+    const overId = over?.id ?? over?.data?.current?.sortable?.containerId;
     if (!over) return;
+    const sourceColumnId = sourceColumnRef.current;
+    const sourceColumn = board.columns[sourceColumnId!];
 
     const activeId = active.id as string;
-    const overId = over.id as string;
 
-    const sourceColumn = findColumnByTaskId(board, activeId);
     const targetColumn =
       findColumnByTaskId(board, overId) || board.columns[overId];
 
     if (!sourceColumn || !targetColumn) return;
-
+    console.log(over);
+    // =============================
+    // 1️⃣ MOVE DALAM COLUMN (REORDER)
+    // =============================
     if (sourceColumn.id === targetColumn.id) {
       const from = sourceColumn.taskIds.indexOf(activeId);
       const to = targetColumn.taskIds.indexOf(overId);
@@ -103,34 +120,18 @@ export default function Board() {
       return;
     }
 
-    setBoard((prev) => {
-      const sourceTaskIds = [...sourceColumn.taskIds];
-      const targetTaskIds = [...targetColumn.taskIds];
-
-      sourceTaskIds.splice(sourceTaskIds.indexOf(activeId), 1);
-
-      const insertIndex = targetTaskIds.indexOf(overId);
-      targetTaskIds.splice(
-        insertIndex >= 0 ? insertIndex : targetTaskIds.length,
-        0,
-        activeId,
-      );
-
-      return {
-        ...prev,
-        columns: {
-          ...prev.columns,
-          [sourceColumn.id]: {
-            ...sourceColumn,
-            taskIds: sourceTaskIds,
-          },
-          [targetColumn.id]: {
-            ...targetColumn,
-            taskIds: targetTaskIds,
-          },
-        },
-      };
-    });
+    // =============================
+    // 3️⃣ 🔥 DISPATCH KE REDUX
+    // =============================
+    dispatch(
+      moveTask({
+        boardId: board.id,
+        taskId: activeId,
+        fromColumnId: sourceColumn.id,
+        toColumnId: targetColumn.id,
+        actor: "You",
+      }),
+    );
   }
 
   function handleDragOver(event: DragOverEvent) {
@@ -148,6 +149,7 @@ export default function Board() {
     if (sourceColumn.id === targetColumn.id) return;
     if (targetColumn.id === activeColumnId) return;
 
+    // console.log(sourceColumn.id);
     setActiveColumnId(targetColumn.id);
 
     setBoard((prev) => {
@@ -205,7 +207,7 @@ export default function Board() {
     line-clamp-2 
   "
         >
-          Tugas Akhir Basis Data
+          {board.title}
         </h1>
       </div>
 

@@ -11,6 +11,9 @@ interface InputProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   error?: string;
   disabled?: boolean;
+
+  className?: string; // untuk <input />
+  wrapperClassName?: string; // untuk container
 }
 
 export default function Input({
@@ -22,9 +25,11 @@ export default function Input({
   onChange,
   error,
   disabled = false,
+  className = "",
+  wrapperClassName = "",
 }: InputProps) {
   return (
-    <div className="flex flex-col gap-1 w-[100%]">
+    <div className={`flex flex-col gap-1 w-full ${wrapperClassName}`}>
       {label && (
         <label
           htmlFor={name}
@@ -42,9 +47,13 @@ export default function Input({
         value={value}
         onChange={onChange}
         disabled={disabled}
-        className={`rounded-lg border h-12 sm:h-14 px-3 py-2  text-sm sm:text-lg outline-none transition \
-          ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-dp"} \
-          ${disabled ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2"}`}
+        className={`
+          rounded-lg border h-12 sm:h-14 px-3 py-2 text-sm sm:text-lg
+          outline-none transition
+          ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-dp"}
+          ${disabled ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2"}
+          ${className}
+        `}
       />
 
       {error && <p className="text-xs text-red-500">{error}</p>}

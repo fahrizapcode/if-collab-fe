@@ -59,7 +59,7 @@ export default function Home() {
         onClick={() => setIsModalOpen(false)}
       ></div>
       <div
-        className={`h-150 w-[100%] sm:w-160 rounded-xl border border-gry bg-white
+        className={`h-150 w-[100%] sm:w-160 rounded-xl bg-white
         transition-transform duration-300 ease-in-out absolute 
         ${isModalOpen ? "translate-y-44 md:translate-y-26" : "translate-y-[110vh]"}
       `}

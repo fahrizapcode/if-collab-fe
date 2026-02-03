@@ -1,13 +1,31 @@
 "use client";
 
-type ActivityItemProps = Activity;
-export default function ActivityItem({
-  actor,
-  task,
-  status,
-  timeAgo,
-  accentColor,
-}: ActivityItemProps) {
+import { useAppSelector } from "@/store/hooks";
+import {
+  selectActiveBoardColumns,
+  selectActiveBoardTasks,
+} from "@/store/boardsSelectors";
+import { timeAgo } from "../helpers";
+
+type Props = {
+  log: {
+    id: string;
+    actor: string;
+    taskId: string;
+    fromColumnId: string;
+    toColumnId: string;
+    createdAt: string;
+  };
+  accentColor: string;
+};
+
+export default function ActivityItem({ log, accentColor }: Props) {
+  const tasks = useAppSelector(selectActiveBoardTasks);
+  const columns = useAppSelector(selectActiveBoardColumns);
+
+  const task = tasks[log.taskId];
+  const toColumn = columns[log.toColumnId];
+
   return (
     <div
       className="
@@ -36,17 +54,19 @@ export default function ActivityItem({
         text-gray-400
       "
       >
-        {timeAgo}
+        {timeAgo(log.createdAt)}
       </span>
 
       <div className="flex flex-1 flex-col gap-0.5 sm:gap-1">
         <h4 className="text-[0.95rem] sm:text-xl font-semibold text-purple-800">
-          {actor}
+          {log.actor}
         </h4>
 
         <p className="text-[0.7rem] sm:text-sm text-gray-600 leading-snug">
-          Memindahkan tugas <span className="font-medium">“{task}”</span> ke
-          status <span className="font-medium">{status}</span>
+          Memindahkan tugas{" "}
+          <span className="font-medium">“{task?.title ?? "Unknown Task"}”</span>{" "}
+          ke status{" "}
+          <span className="font-medium">{toColumn?.title ?? "Unknown"}</span>
         </p>
       </div>
     </div>

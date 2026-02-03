@@ -4,8 +4,17 @@ import Image from "next/image";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setActiveBoard } from "@/store/boardsSlice";
 import ButtonIcon from "@/components/ui/ButtonIcon";
+import { ActiveComponent } from "@/types/types";
 
-export default function Sidebar({ isOpen }: { isOpen: boolean }) {
+export default function Sidebar({
+  isOpen,
+  setIsActiveComponent,
+  setIsActiveOverlay,
+}: {
+  isOpen: boolean;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+  setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const dispatch = useAppDispatch();
 
   const { boards, activeBoardId } = useAppSelector((state) => state.boards);
@@ -56,9 +65,14 @@ export default function Sidebar({ isOpen }: { isOpen: boolean }) {
           bg-gradient-to-br from-indigo-500 via-purple-600 to-indigo-700
           ring-1 ring-white/30
           after:absolute after:inset-0
-          after:bg-gradient-to-b after:from-white/18 after:via-white/6 after:to-transparent
+          after:bg-gradient-to-b after:from-white/18 after:via-white/6 after:to-tra
+          nsparent
           transition-colors
         "
+          onClick={() => {
+            setIsActiveOverlay(true);
+            setIsActiveComponent("addProject");
+          }}
         >
           Proyek Baru
         </ButtonIcon>

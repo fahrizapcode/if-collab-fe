@@ -109,6 +109,49 @@ export const initialBoards: BoardsState = {
         review: { id: "review", title: "Review", taskIds: ["11", "13", "15"] },
         done: { id: "done", title: "Done", taskIds: ["14", "17", "18"] },
       },
+      activityLogs: [
+        {
+          id: "log-001",
+          actor: "You",
+          taskId: "1",
+          fromColumnId: "backlog",
+          toColumnId: "todo",
+          createdAt: "2026-01-29T08:00:00.000Z",
+        },
+        {
+          id: "log-002",
+          actor: "You",
+          taskId: "2",
+          fromColumnId: "backlog",
+          toColumnId: "todo",
+          createdAt: "2026-01-29T08:05:00.000Z",
+        },
+        {
+          id: "log-003",
+          actor: "You",
+          taskId: "3",
+          fromColumnId: "backlog",
+          toColumnId: "doing",
+          createdAt: "2026-01-29T08:10:00.000Z",
+        },
+        {
+          id: "log-004",
+          actor: "You",
+          taskId: "1",
+          fromColumnId: "todo",
+          toColumnId: "doing",
+          createdAt: "2026-01-29T08:30:00.000Z",
+        },
+        {
+          id: "log-005",
+          actor: "You",
+          taskId: "1",
+          fromColumnId: "doing",
+          toColumnId: "review",
+          createdAt: "2026-01-29T09:00:00.000Z",
+        },
+      ],
+      columnOrder: ["backlog", "todo", "doing", "done"],
     },
 
     /* =====================================================
@@ -156,6 +199,8 @@ export const initialBoards: BoardsState = {
         review: { id: "review", title: "Review", taskIds: ["9", "10"] },
         done: { id: "done", title: "Done", taskIds: ["13", "14", "16"] },
       },
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "done"],
     },
 
     /* =====================================================
@@ -201,6 +246,8 @@ export const initialBoards: BoardsState = {
         review: { id: "review", title: "Review", taskIds: ["11", "13", "14"] },
         done: { id: "done", title: "Done", taskIds: ["17", "18", "19", "20"] },
       },
+      columnOrder: ["backlog", "todo", "doing", "done"],
+      activityLogs: [],
     },
 
     /* =====================================================
@@ -236,6 +283,8 @@ export const initialBoards: BoardsState = {
           taskIds: ["2", "8", "9", "11", "12"],
         },
       },
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "done"],
     },
 
     /* =====================================================
@@ -347,6 +396,8 @@ export const initialBoards: BoardsState = {
         },
         done: { id: "done", title: "Done", taskIds: ["14", "15"] },
       },
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "done"],
     },
   },
 };

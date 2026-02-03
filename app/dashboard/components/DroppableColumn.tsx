@@ -1,6 +1,6 @@
-import Button from "@/components/ui/Button";
 import ButtonIcon from "@/components/ui/ButtonIcon";
 import { useDroppable } from "@dnd-kit/core";
+
 export default function DroppableColumn({
   column,
   children,
@@ -15,29 +15,18 @@ export default function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
+      data-column-id={column.id} // ✅ FIX: simpan columnId agar handleDragEnd bisa akurat
       className={`
-    w-[14em] sm:w-80
-    rounded-md
-    p-2.5 sm:p-4
-    min-h-[100px] sm:min-h-[120px]
-    ${isActive ? "bg-[#D5B2FB]" : "bg-lp"}
-  `}
+        w-[14em] sm:w-80
+        rounded-md
+        p-2.5 sm:p-4
+        min-h-[100px] sm:min-h-[120px]
+        ${isActive ? "bg-[#D5B2FB]" : "bg-lp"}
+      `}
     >
       <h2 className="flex items-center gap-1.5 font-semibold mb-2 sm:mb-3 text-[0.95rem] sm:text-lg">
         {column.title}
-        <span
-          className="
-        min-w-[1.35rem] sm:min-w-[1.75rem]
-        h-[1.35rem] sm:h-[1.75rem]
-        px-1 sm:px-2
-        flex items-center justify-center
-        text-[0.7rem] sm:text-sm
-        font-medium
-        rounded-full
-        text-white
-        bg-np
-      "
-        >
+        <span className="min-w-[1.35rem] sm:min-w-[1.75rem] h-[1.35rem] sm:h-[1.75rem] px-1 sm:px-2 flex items-center justify-center text-[0.7rem] sm:text-sm font-medium rounded-full text-white bg-np">
           {column.taskIds.length}
         </span>
       </h2>

@@ -1,12 +1,11 @@
 import ClickableIcon from "@/components/ui/ClickableIcon";
+import { ActiveComponent } from "@/types/types";
 export default function Nav({
   setIsActiveOverlay,
   setIsActiveComponent,
 }: {
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsActiveComponent: React.Dispatch<
-    React.SetStateAction<"sidebar" | "addtask" | "stats" | null>
-  >;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
 }) {
   return (
     <div className="h-[10dvh]  absolute top-0 right-0 items-center px-6 gap-x-2 flex py-4 z-10 lg:z-20">
