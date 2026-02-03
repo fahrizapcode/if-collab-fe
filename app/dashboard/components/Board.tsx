@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, act } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -14,7 +14,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import { reorder, findColumnByTaskId } from "../helpers";
+import { reorder } from "../helpers";
 import SortableTaskCard from "./SortableTaskCard";
 import DroppableColumn from "./DroppableColumn";
 import Image from "next/image";
@@ -38,6 +38,15 @@ export default function Board() {
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const taskToColumnMap = useMemo(() => {
+    const mapping = new Map<string, string>();
+    Object.values(board.columns).forEach((column) => {
+      column.taskIds.forEach((taskId) => {
+        mapping.set(taskId, column.id);
+      });
+    });
+    return mapping;
+  }, [board.columns]);
 
   useEffect(() => {
     setBoard(activeBoard);
@@ -65,8 +74,8 @@ export default function Board() {
     const taskId = event.active.id as string;
     setActiveTask(board.tasks[taskId]);
 
-    const sourceColumn = findColumnByTaskId(board, taskId);
-    setActiveColumnId(sourceColumn?.id ?? null);
+    const sourceColumnId = taskToColumnMap.get(taskId);
+    setActiveColumnId(sourceColumnId ?? null);
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -78,9 +87,15 @@ export default function Board() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    const sourceColumn = findColumnByTaskId(board, activeId);
-    const targetColumn =
-      findColumnByTaskId(board, overId) || board.columns[overId];
+    const sourceColumnId = taskToColumnMap.get(activeId);
+    const targetColumnId =
+      taskToColumnMap.get(overId) ?? (overId in board.columns ? overId : null);
+    const sourceColumn = sourceColumnId
+      ? board.columns[sourceColumnId]
+      : null;
+    const targetColumn = targetColumnId
+      ? board.columns[targetColumnId]
+      : null;
 
     if (!sourceColumn || !targetColumn) return;
 
@@ -140,9 +155,15 @@ export default function Board() {
     const activeId = active.id as string;
     const overId = over.id as string;
 
-    const sourceColumn = findColumnByTaskId(board, activeId);
-    const targetColumn =
-      findColumnByTaskId(board, overId) || board.columns[overId];
+    const sourceColumnId = taskToColumnMap.get(activeId);
+    const targetColumnId =
+      taskToColumnMap.get(overId) ?? (overId in board.columns ? overId : null);
+    const sourceColumn = sourceColumnId
+      ? board.columns[sourceColumnId]
+      : null;
+    const targetColumn = targetColumnId
+      ? board.columns[targetColumnId]
+      : null;
 
     if (!sourceColumn || !targetColumn) return;
     if (sourceColumn.id === targetColumn.id) return;
