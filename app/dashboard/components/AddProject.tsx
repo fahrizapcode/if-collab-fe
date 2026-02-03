@@ -111,7 +111,7 @@ export default function AddProject({
           </span>
         </div>
 
-        <div className="space-y-2 px-1">
+        <div className="space-y-2 sm:px-1">
           {statuses.map((status, i) => (
             <div key={i} className="flex items-center gap-2">
               <Input
@@ -138,7 +138,7 @@ export default function AddProject({
           srcIcon={"/icons/add-white.svg"}
           iconHeight={24}
           iconWidth={24}
-          className="mt-1.5 sm:mt-2 text-[0.85rem] sm:text-[1.1rem] py-3.5 rounded-lg ml-1 w-50"
+          className="mt-1.5 sm:mt-2 text-[0.85rem] sm:text-[1.1rem] py-3.5 rounded-lg sm:ml-1 w-50"
           fullWidth={false}
           onClick={handleAddStatus}
         >
@@ -154,7 +154,7 @@ export default function AddProject({
           onChange={(e) => setDeadline(e.target.value)}
           label="Tenggat Waktu (Opsional)"
           name="deadline"
-          className="ml-1"
+          className="sm:ml-1 w-[98%]"
         />
       </div>
 

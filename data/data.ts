@@ -1,3 +1,5 @@
+import { Activity, BoardsState } from "@/types/types";
+
 export const initialBoards: BoardsState = {
   activeBoardId: "board-1",
 

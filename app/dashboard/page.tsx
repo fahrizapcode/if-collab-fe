@@ -9,7 +9,6 @@ import Overlay from "./components/Overlay";
 import Sidebar from "./components/Sidebar";
 import Nav from "./components/Nav";
 import AddProject from "./components/AddProject";
-import DesktopOverlay from "./components/DesktopOverlay";
 
 import { ActiveComponent } from "@/types/types";
 

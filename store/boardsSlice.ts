@@ -1,6 +1,12 @@
 import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
 import { initialBoards } from "@/data/data";
 import { BoardsState, Column } from "@/types/types";
+type AddTaskPayload = {
+  boardId: string;
+  columnId: string;
+  title: string;
+  actor?: string;
+};
 
 const initialState: BoardsState = initialBoards;
 
