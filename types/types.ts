@@ -4,6 +4,11 @@ export type Task = {
   title: string;
   tags?: string[];
   priority: Priority;
+  description?: string;
+  assignTo: string[];
+  createdAt: string;
+  createdBy: string;
+  deadline?: string;
 };
 
 export type Column = {
@@ -11,15 +16,22 @@ export type Column = {
   title: string;
   taskIds: string[];
 };
+export type Role = {
+  role: string;
+};
 
 export type BoardData = {
   id: string;
   title: string;
+  members: Record<string, Role>;
   tasks: Record<string, Task>;
   columns: Record<string, Column>;
   activityLogs: ActivityLog[];
   columnOrder: string[];
   deadline?: string;
+  createdAt: string;
+  description: string;
+  createdBy: string;
 };
 
 export type BoardsState = {
@@ -37,7 +49,7 @@ export type Activity = {
 };
 export type ActivityLog = {
   id: string;
-  actor: string; // ⬅️ REQUIRED
+  actorId: string; // ⬅️ REQUIRED
   taskId: string;
   fromColumnId: string;
   toColumnId: string;
@@ -45,4 +57,9 @@ export type ActivityLog = {
 };
 
 // types/ui.ts
-export type ActiveComponent = "sidebar" | "addProject" | "stats" | null;
+export type ActiveComponent =
+  | "sidebar"
+  | "addProject"
+  | "stats"
+  | "addTask"
+  | null;

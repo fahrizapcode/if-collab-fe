@@ -1,14 +1,22 @@
 import ButtonIcon from "@/components/ui/ButtonIcon";
+import { Column } from "@/types/types";
 import { useDroppable } from "@dnd-kit/core";
+import { ActiveComponent } from "@/types/types";
 
 export default function DroppableColumn({
   column,
   children,
   isActive,
+  setIsActiveOverlay,
+  setIsActiveComponent,
+  setTaskColumnId,
 }: {
   column: Column;
   children: React.ReactNode;
   isActive?: boolean;
+  setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+  setTaskColumnId: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const { setNodeRef } = useDroppable({ id: column.id });
 
@@ -38,6 +46,11 @@ export default function DroppableColumn({
         iconHeight={24}
         iconWidth={24}
         className="mt-1.5 sm:mt-2 text-[0.85rem] sm:text-[1.1rem] py-3.5 rounded-sm"
+        onClick={() => {
+          setIsActiveComponent("addTask");
+          setTaskColumnId(column.id);
+          setIsActiveOverlay(true);
+        }}
       >
         Tambah Tugas
       </ButtonIcon>

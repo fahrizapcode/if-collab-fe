@@ -1,6 +1,7 @@
 export type User = {
-  nama: string;
+  name: string;
   nim_nip: string;
   password: string;
   avatar: string;
 };
+export type PublicUser = Omit<User, "password">;

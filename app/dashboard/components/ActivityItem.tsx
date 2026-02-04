@@ -6,11 +6,12 @@ import {
   selectActiveBoardTasks,
 } from "@/store/boardsSelectors";
 import { timeAgo } from "../helpers";
+import { selectUserByNim } from "@/store/usersSlice";
 
 type Props = {
   log: {
     id: string;
-    actor: string;
+    actorId: string;
     taskId: string;
     fromColumnId: string;
     toColumnId: string;
@@ -22,10 +23,9 @@ type Props = {
 export default function ActivityItem({ log, accentColor }: Props) {
   const tasks = useAppSelector(selectActiveBoardTasks);
   const columns = useAppSelector(selectActiveBoardColumns);
-
+  const user = useAppSelector(selectUserByNim(log.actorId));
   const task = tasks[log.taskId];
   const toColumn = columns[log.toColumnId];
-
   return (
     <div
       className="
@@ -59,7 +59,7 @@ export default function ActivityItem({ log, accentColor }: Props) {
 
       <div className="flex flex-1 flex-col gap-0.5 sm:gap-1">
         <h4 className="text-[0.95rem] sm:text-xl font-semibold text-purple-800">
-          {log.actor}
+          Anda
         </h4>
 
         <p className="text-[0.7rem] sm:text-sm text-gray-600 leading-snug">

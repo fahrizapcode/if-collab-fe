@@ -2,6 +2,10 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import PriorityDot from "./PriorityDot";
 import { Task } from "@/types/types";
+import { useMemo } from "react";
+import { makeSelectUsersByNims } from "@/store/boardsSelectors";
+import { useSelector } from "react-redux";
+import AvatarStack from "./AvatarStack";
 
 export default function SortableTaskCard({ task }: { task: Task }) {
   const {
@@ -18,6 +22,11 @@ export default function SortableTaskCard({ task }: { task: Task }) {
     transition,
     opacity: isDragging ? 0 : 1,
   };
+  const usersSelector = useMemo(
+    () => makeSelectUsersByNims(task.assignTo),
+    [task.assignTo],
+  );
+  const users = useSelector(usersSelector);
 
   return (
     <div
@@ -44,12 +53,13 @@ export default function SortableTaskCard({ task }: { task: Task }) {
           <PriorityDot priority={task.priority ?? "low"} />
         </div>
 
-        {task.tags?.length ? (
-          <div className="flex flex-wrap gap-0.5 mt-1 sm:mt-2">
-            {task.tags.map((tag) => (
-              <span
-                key={tag}
-                className="
+        <div className="flex justify-between">
+          {task.tags?.length ? (
+            <div className="flex flex-wrap gap-0.5 mt-1 sm:mt-2">
+              {task.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="
               px-1 sm:px-2
               py-[1px] sm:py-0.5
               rounded-sm
@@ -57,12 +67,16 @@ export default function SortableTaskCard({ task }: { task: Task }) {
               font-medium
               bg-lp text-dp
             "
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <div></div>
+          )}
+          <AvatarStack users={users} />
+        </div>
       </div>
     </div>
   );

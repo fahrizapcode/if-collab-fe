@@ -10,13 +10,20 @@ import Sidebar from "./components/Sidebar";
 import Nav from "./components/Nav";
 import AddProject from "./components/AddProject";
 
-import { ActiveComponent } from "@/types/types";
+import { ActiveComponent, BoardData } from "@/types/types";
+import AddTask from "./components/AddTask";
+import { useAppSelector } from "@/store/hooks";
 
 const Board = dynamic(() => import("./components/Board"), { ssr: false });
 
 export default function DashboardPage() {
+  const activeBoard = useAppSelector(
+    (state) => state.boards.boards[state.boards.activeBoardId],
+  );
+  const [board, setBoard] = useState<BoardData>(activeBoard);
   // mobile-only UI state
   const [isActiveOverlay, setIsActiveOverlay] = useState(false);
+  const [taskColumnId, setTaskColumnId] = useState<string>("");
   const [isActiveComponent, setIsActiveComponent] =
     useState<ActiveComponent>(null);
 
@@ -33,6 +40,10 @@ export default function DashboardPage() {
       <Board
         setIsActiveComponent={setIsActiveComponent}
         setIsActiveOverlay={setIsActiveOverlay}
+        setTaskColumnId={setTaskColumnId}
+        board={board}
+        activeBoard={activeBoard}
+        setBoard={setBoard}
       />
 
       {/* RIGHT ASIDE */}
@@ -58,7 +69,13 @@ export default function DashboardPage() {
       />
 
       {/* OPTIONAL DESKTOP OVERLAY */}
-
+      <AddTask
+        isOpen={isActiveComponent === "addTask"}
+        taskColumnId={taskColumnId}
+        board={board}
+        setIsActiveOverlay={setIsActiveOverlay}
+        setIsActiveComponent={setIsActiveComponent}
+      />
       {/* MOBILE MENU BUTTON */}
       <ClickableIcon
         srcIcon="/icons/menu-three-dots-white.svg"

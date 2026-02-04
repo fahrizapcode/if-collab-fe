@@ -20,7 +20,6 @@ import { reorder, findColumnByTaskId } from "../helpers";
 import SortableTaskCard from "./SortableTaskCard";
 import DroppableColumn from "./DroppableColumn";
 import Image from "next/image";
-import { useAppSelector } from "@/store/hooks";
 import { ActiveComponent, BoardData, Task } from "@/types/types";
 
 /* =======================
@@ -34,16 +33,20 @@ import { ActiveComponent, BoardData, Task } from "@/types/types";
 export default function Board({
   setIsActiveOverlay,
   setIsActiveComponent,
+  setTaskColumnId,
+  board,
+  setBoard,
+  activeBoard,
 }: {
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+  setTaskColumnId: React.Dispatch<React.SetStateAction<string>>;
+  board: BoardData;
+  setBoard: React.Dispatch<React.SetStateAction<BoardData>>;
+  activeBoard: BoardData;
 }) {
-  const activeBoard = useAppSelector(
-    (state) => state.boards.boards[state.boards.activeBoardId],
-  );
   const dispatch = useAppDispatch();
 
-  const [board, setBoard] = useState<BoardData>(activeBoard);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [activeColumnId, setActiveColumnId] = useState<string | null>(null);
   const sourceColumnRef = useRef<string | null>(null);
@@ -98,7 +101,6 @@ export default function Board({
 
     if (!sourceColumn || !targetColumn) return;
     console.log(over);
-    // =============================
     // 1️⃣ MOVE DALAM COLUMN (REORDER)
     // =============================
     if (sourceColumn.id === targetColumn.id) {
@@ -229,6 +231,10 @@ export default function Board({
                 <DroppableColumn
                   column={column}
                   isActive={activeColumnId === column.id}
+                  setIsActiveComponent={setIsActiveComponent}
+                  setIsActiveOverlay={setIsActiveOverlay}
+                  setTaskColumnId={setTaskColumnId}
+                  setIsActiveComponent={setIsActiveComponent}
                 >
                   <SortableContext
                     items={column.taskIds}

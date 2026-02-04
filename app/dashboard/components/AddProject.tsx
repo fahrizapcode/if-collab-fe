@@ -59,6 +59,7 @@ export default function AddProject({
         title,
         statuses,
         deadline: deadline || undefined,
+        createdBy: "123705001",
       }),
     );
 
