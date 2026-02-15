@@ -129,20 +129,26 @@ function TaskForm({
 
   return (
     <form
-      className={`h-[86dvh] p-4 pt-6 w-[100%] sm:w-160 rounded-xl bg-white z-30 flex flex-col gap-y-3 overflow-y-scroll
-        transition-transform duration-300 ease-in-out absolute 
-        ${isOpen ? "translate-y-44 md:translate-y-16" : "translate-y-[110vh]"}
-      `}
+      className={`h-[88dvh] sm:h-[86dvh] 
+     px-5 pt-6 sm:pt-6 pb-10
+      w-full sm:w-160 
+      rounded-xl bg-white z-30 
+      flex flex-col gap-y-2 sm:gap-y-3 
+      overflow-y-auto justify-between
+      transition-transform duration-300 ease-in-out absolute 
+      ${isOpen ? "translate-y-28 md:translate-y-16 fixed" : "translate-y-[110vh]"}
+    `}
       onSubmit={handleSubmit}
     >
-      <div className="flex justify-between">
-        <h1 className="text-3xl font-medium">Tambah Tugas</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl sm:text-3xl font-medium">Tambah Tugas</h1>
+
         <Image
           src="/icons/add.svg"
           alt="add"
-          width={50}
-          height={50}
-          className="rotate-45 w-10 sm:w-12 cursor-pointer sm:block hidden"
+          width={40}
+          height={40}
+          className="rotate-45 w-8 sm:w-12 cursor-pointer hidden sm:block"
           onClick={() => {
             setIsActiveComponent(null);
             setIsActiveOverlay(false);
@@ -150,10 +156,10 @@ function TaskForm({
         />
       </div>
 
-      <div className="flex flex-col gap-y-3 overflow-y-scroll h-[80%] px-1">
+      <div className="flex flex-col gap-y-2 sm:gap-y-3 overflow-y-auto h-[76%] px-1">
         {/* Nama Tugas */}
         <div>
-          <label className="block font-medium text-[1.15rem] mb-1">
+          <label className="block font-medium text-base sm:text-[1.15rem] mb-1">
             Nama Tugas
           </label>
           <input
@@ -163,22 +169,22 @@ function TaskForm({
               setName(e.target.value);
               if (nameError) setNameError("");
             }}
-            className={`w-full border rounded px-3 py-1.5 text-[1.15rem]
-    focus:outline-none focus:ring-2
-    ${
-      nameError
-        ? "border-red-500 focus:ring-red-500"
-        : "border-gray-300 focus:ring-purple-500"
-    }`}
+            className={`w-full border rounded px-3 py-2 sm:py-1.5 text-base sm:text-[1.15rem]
+            focus:outline-none focus:ring-2
+            ${
+              nameError
+                ? "border-red-500 focus:ring-red-500"
+                : "border-gray-300 focus:ring-purple-500"
+            }`}
           />
           {nameError && (
-            <p className="mt-1 text-sm text-red-500">{nameError}</p>
+            <p className="mt-1 text-xs sm:text-sm text-red-500">{nameError}</p>
           )}
         </div>
 
         {/* Prioritas */}
         <div>
-          <label className="block text-[1.15rem] font-medium  mb-1">
+          <label className="block text-base sm:text-[1.15rem] font-medium mb-1">
             Prioritas
           </label>
           <div className="flex gap-2">
@@ -187,11 +193,13 @@ function TaskForm({
                 key={level}
                 type="button"
                 onClick={() => setPriority(level)}
-                className={`px-3 flex-1 py-3 text-lg rounded font-medium border ${
+                className={`px-2 sm:px-3 flex-1 py-3 sm:py-3.5 
+                text-sm sm:text-lg rounded font-medium border 
+                ${
                   priority === level
                     ? `border-purple-600 ${priorityClasses[level]}`
                     : "border-gray-300"
-                } `}
+                }`}
               >
                 {level === "low"
                   ? "Rendah"
@@ -212,46 +220,54 @@ function TaskForm({
         />
 
         {/* Tag */}
-
-        <TagInput
-          availableTags={availableTags}
-          selectedTags={tags}
-          onChange={setTags}
-        />
+        <TagInput selectedTags={tags} onChange={setTags} />
 
         {/* Deskripsi */}
         <div>
-          <label className="block text-[1.15rem] font-medium  mb-1">
+          <label className="block text-base sm:text-[1.15rem] font-medium mb-1">
             Deskripsi
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-300 rounded text-[1.15rem] px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            rows={4}
+            className="w-full border border-gray-300 rounded 
+            text-base sm:text-[1.15rem] 
+            px-3 py-2 
+            focus:outline-none focus:ring-2 focus:ring-purple-500"
+            rows={3}
           />
         </div>
 
         {/* Tenggat Waktu */}
         <div>
-          <label className="block text-[1.15rem] font-medium mb-1">
+          <label className="block text-base sm:text-[1.15rem] font-medium mb-1">
             Tenggat Waktu
           </label>
           <input
             type="datetime-local"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="w-full border border-gray-300 rounded 
+            px-2 py-3 sm:p-3 
+            text-[1rem] sm:text-base
+            focus:outline-none focus:ring-2 focus:ring-purple-500"
           />
         </div>
       </div>
+
       {/* Submit */}
-      <button
-        type="submit"
-        className="mt-4 bg-purple-600 text-white font-semibold py-4 px-4 rounded hover:bg-purple-700"
-      >
-        Buat Tugas
-      </button>
+      <div className="w-[100%] px-1">
+        <button
+          type="submit"
+          className=" 
+        bg-purple-600 text-white font-semibold 
+        py-4 px-4 w-[100%]
+        rounded hover:bg-purple-700 
+        text-sm sm:text-base"
+        >
+          Buat Tugas
+        </button>
+      </div>
     </form>
   );
 }

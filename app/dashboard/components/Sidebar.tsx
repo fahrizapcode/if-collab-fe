@@ -9,9 +9,11 @@ import { ActiveComponent } from "@/types/types";
 export default function Sidebar({
   isOpen,
   setIsActiveComponent,
+  isActiveComponent,
   setIsActiveOverlay,
 }: {
   isOpen: boolean;
+  isActiveComponent: ActiveComponent;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
@@ -83,7 +85,13 @@ export default function Sidebar({
           return (
             <button
               key={board.id}
-              onClick={() => dispatch(setActiveBoard(board.id))}
+              onClick={() => {
+                if (isActiveComponent === "taskDetail") {
+                  setIsActiveComponent(null);
+                }
+
+                dispatch(setActiveBoard(board.id));
+              }}
               className={`
               w-full text-left
               px-3 sm:px-4

@@ -2,6 +2,9 @@ import ButtonIcon from "@/components/ui/ButtonIcon";
 import { Column } from "@/types/types";
 import { useDroppable } from "@dnd-kit/core";
 import { ActiveComponent } from "@/types/types";
+import ClickableIcon from "@/components/ui/ClickableIcon";
+
+import Image from "next/image";
 
 export default function DroppableColumn({
   column,
@@ -32,7 +35,7 @@ export default function DroppableColumn({
         ${isActive ? "bg-[#D5B2FB]" : "bg-lp"}
       `}
     >
-      <h2 className="flex items-center gap-1.5 font-semibold mb-2 sm:mb-3 text-[0.95rem] sm:text-lg">
+      <h2 className="flex items-center gap-1.5 font-semibold text-[0.95rem]   mb-2 sm:mb-3 sm:text-lg">
         {column.title}
         <span className="min-w-[1.35rem] sm:min-w-[1.75rem] h-[1.35rem] sm:h-[1.75rem] px-1 sm:px-2 flex items-center justify-center text-[0.7rem] sm:text-sm font-medium rounded-full text-white bg-np">
           {column.taskIds.length}

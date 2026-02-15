@@ -8,6 +8,9 @@ import {
   DragEndEvent,
   DragOverEvent,
   DragOverlay,
+  useSensors,
+  PointerSensor,
+  useSensor,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -21,6 +24,7 @@ import SortableTaskCard from "./SortableTaskCard";
 import DroppableColumn from "./DroppableColumn";
 import Image from "next/image";
 import { ActiveComponent, BoardData, Task } from "@/types/types";
+import ClickableIcon from "@/components/ui/ClickableIcon";
 
 /* =======================
    INITIAL DATA
@@ -37,6 +41,7 @@ export default function Board({
   board,
   setBoard,
   activeBoard,
+  setActiveTaskId,
 }: {
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
@@ -44,6 +49,7 @@ export default function Board({
   board: BoardData;
   setBoard: React.Dispatch<React.SetStateAction<BoardData>>;
   activeBoard: BoardData;
+  setActiveTaskId: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const dispatch = useAppDispatch();
 
@@ -179,6 +185,13 @@ export default function Board({
       };
     });
   }
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 6, // geser 6px baru dianggap drag
+      },
+    }),
+  );
 
   return (
     <div className="flex flex-1 flex-col overflow-x-auto scrollbar-stable bg-lp h-[100dvh] w-1">
@@ -211,6 +224,12 @@ export default function Board({
         >
           {board.title}
         </h1>
+        <ClickableIcon
+          srcIcon="/icons/tool-white.svg"
+          className="active:opacity-20 rounded- cursor-pointer"
+          size={32}
+          onClick={() => setIsActiveComponent("projectDetail")}
+        />
       </div>
 
       {/* Scroll Y penuh */}
@@ -220,42 +239,54 @@ export default function Board({
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDragOver={handleDragOver}
+          sensors={sensors}
         >
           <div
             ref={containerRef}
             className="flex flex-1 gap-4 p-4 overflow-x-auto overflow-y-10 scrollbar-stable touch-pan-x bg-lp board-scroll"
             style={{ scrollSnapType: "x mandatory" }}
           >
-            {Object.values(board.columns).map((column) => (
-              <div key={column.id} className="snap-start">
-                <DroppableColumn
-                  column={column}
-                  isActive={activeColumnId === column.id}
-                  setIsActiveComponent={setIsActiveComponent}
-                  setIsActiveOverlay={setIsActiveOverlay}
-                  setTaskColumnId={setTaskColumnId}
-                  setIsActiveComponent={setIsActiveComponent}
-                >
-                  <SortableContext
-                    items={column.taskIds}
-                    strategy={verticalListSortingStrategy}
+            {board.columnOrder.map((columnId) => {
+              const column = board.columns[columnId];
+
+              return (
+                <div key={column.id} className="snap-start">
+                  <DroppableColumn
+                    column={column}
+                    isActive={activeColumnId === column.id}
+                    setIsActiveComponent={setIsActiveComponent}
+                    setIsActiveOverlay={setIsActiveOverlay}
+                    setTaskColumnId={setTaskColumnId}
                   >
-                    <div className="space-y-2">
-                      {column.taskIds.map((taskId) => (
-                        <SortableTaskCard
-                          key={taskId}
-                          task={board.tasks[taskId]}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DroppableColumn>
-              </div>
-            ))}
+                    <SortableContext
+                      items={column.taskIds}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {column.taskIds.map((taskId) => (
+                          <SortableTaskCard
+                            key={taskId}
+                            setIsActiveComponent={setIsActiveComponent}
+                            setActiveTaskId={setActiveTaskId}
+                            task={board.tasks[taskId]}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DroppableColumn>
+                </div>
+              );
+            })}
           </div>
 
           <DragOverlay dropAnimation={null}>
-            {activeTask && <SortableTaskCard task={activeTask} />}
+            {activeTask && (
+              <SortableTaskCard
+                task={activeTask}
+                setIsActiveComponent={setIsActiveComponent}
+                setActiveTaskId={setActiveTaskId}
+              />
+            )}
           </DragOverlay>
         </DndContext>
       </div>

@@ -76,7 +76,7 @@ export default function AddProject({
       onSubmit={handleSubmit}
       className={`h-[90dvh] sm:h-[80dvh]  w-full sm:w-160 rounded-xl bg-white
       transition-transform duration-300 ease-in-out absolute z-31 p-6
-      ${isOpen ? "translate-y-32 md:translate-y-18" : "translate-y-[110vh]"}`}
+      ${isOpen ? "translate-y-32 md:translate-y-18 fixed" : "translate-y-[110vh]"}`}
     >
       <h2 className="text-2xl sm:text-3xl font-semibold mb-4 flex justify-between">
         Proyek Baru{" "}

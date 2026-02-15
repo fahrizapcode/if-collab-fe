@@ -13,6 +13,8 @@ import AddProject from "./components/AddProject";
 import { ActiveComponent, BoardData } from "@/types/types";
 import AddTask from "./components/AddTask";
 import { useAppSelector } from "@/store/hooks";
+import ProjectDetail from "./components/ProjectDetail";
+import TaskDetail from "./components/TaskDetail";
 
 const Board = dynamic(() => import("./components/Board"), { ssr: false });
 
@@ -27,6 +29,7 @@ export default function DashboardPage() {
   const [isActiveComponent, setIsActiveComponent] =
     useState<ActiveComponent>(null);
 
+  const [activeTaskId, setActiveTaskId] = useState<string>("");
   return (
     <div className="flex relative overflow-hidden justify-center">
       {/* SIDEBAR */}
@@ -34,6 +37,17 @@ export default function DashboardPage() {
         isOpen={isActiveComponent === "sidebar"}
         setIsActiveComponent={setIsActiveComponent}
         setIsActiveOverlay={setIsActiveOverlay}
+        isActiveComponent={isActiveComponent}
+      />
+      <ProjectDetail
+        isOpen={isActiveComponent === "projectDetail"}
+        activeBoard={activeBoard}
+        setIsActiveComponent={setIsActiveComponent}
+      />
+      <TaskDetail
+        isOpen={isActiveComponent === "taskDetail"}
+        setIsActiveComponent={setIsActiveComponent}
+        activeTaskId={activeTaskId}
       />
 
       {/* MAIN CONTENT */}
@@ -44,6 +58,7 @@ export default function DashboardPage() {
         board={board}
         activeBoard={activeBoard}
         setBoard={setBoard}
+        setActiveTaskId={setActiveTaskId}
       />
 
       {/* RIGHT ASIDE */}

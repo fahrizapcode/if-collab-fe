@@ -11,19 +11,18 @@ export type Task = {
   deadline?: string;
 };
 
+export type Role = "leader" | "manager" | "member" | "observer";
+
 export type Column = {
   id: string;
   title: string;
   taskIds: string[];
 };
-export type Role = {
-  role: string;
-};
 
 export type BoardData = {
   id: string;
   title: string;
-  members: Record<string, Role>;
+  members: Record<string, { role: Role }>;
   tasks: Record<string, Task>;
   columns: Record<string, Column>;
   activityLogs: ActivityLog[];
@@ -33,6 +32,12 @@ export type BoardData = {
   description: string;
   createdBy: string;
 };
+
+export type TabType =
+  | "status"
+  | "kolaborator"
+  | "pengaturan"
+  | "tambah-kolaborator";
 
 export type BoardsState = {
   activeBoardId: string;
@@ -62,4 +67,6 @@ export type ActiveComponent =
   | "addProject"
   | "stats"
   | "addTask"
+  | "projectDetail"
+  | "taskDetail"
   | null;

@@ -13,6 +13,7 @@ export const initialBoards: BoardsState = {
       createdAt: "2025-12-20T08:10:00.000Z",
       description: "Tugas Sehari hari",
       createdBy: "1237050001",
+      deadline: "2026-01-03T08:00:00.000Z",
       members: {
         "1237050001": { role: "leader" }, // Andi Pratama
         "1237050002": { role: "manager" }, // Budi Santoso
@@ -303,6 +304,7 @@ export const initialBoards: BoardsState = {
       createdAt: "2026-01-10T08:00:00.000Z",
       description: "Project aplikasi freelance untuk client eksternal.",
       createdBy: "1237050007",
+      deadline: "2026-02-10T08:00:00.000Z",
 
       members: {
         "1237050007": { role: "leader" }, // user-007
@@ -503,7 +505,7 @@ export const initialBoards: BoardsState = {
       description:
         "Pengembangan MVP startup dari validasi masalah hingga public launch.",
       createdBy: "1237050001",
-
+      deadline: "2026-01-03T08:00:00.000Z",
       members: {
         "1237050001": { role: "leader" }, // user-001
         "1237050002": { role: "manager" }, // user-002
@@ -754,6 +756,7 @@ export const initialBoards: BoardsState = {
       createdAt: "2026-01-01T07:00:00.000Z",
       description: "Task personal untuk pengembangan diri dan karier.",
       createdBy: "1237050001",
+      deadline: "2026-04-20T08:00:00.000Z",
 
       members: {
         "1237050001": { role: "leader" }, // owner
@@ -946,6 +949,7 @@ export const initialBoards: BoardsState = {
       description:
         "Project penelitian dari perumusan topik hingga submit jurnal.",
       createdBy: "1237050005",
+      deadline: "2026-05-25T08:00:00.000Z",
 
       members: {
         "1237050005": { role: "leader" }, // lead researcher

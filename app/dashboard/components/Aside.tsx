@@ -51,7 +51,7 @@ export default function Aside({ isOpen }: { isOpen: boolean }) {
         z-20
         lg:border-none
         transition-transform duration-300 ease-in-out
-        ${isOpen ? "translate-y-10 " : "translate-y-[110vh] lg:translate-y-10"}
+        ${isOpen ? "translate-y-10 fixed" : "translate-y-[110vh] lg:translate-y-10"}
       `}
     >
       <p className="w-full mb-4 sm:mb-6">Progres Tugas</p>

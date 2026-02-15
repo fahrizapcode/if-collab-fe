@@ -1,32 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 
 type TagInputProps = {
-  availableTags: string[];
   selectedTags: string[];
   onChange: (tags: string[]) => void;
   placeholder?: string;
 };
 
 export default function TagInput({
-  availableTags,
   selectedTags,
   onChange,
-  placeholder = "Cari atau buat tag...",
+  placeholder = "buat tag",
 }: TagInputProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
-
-  const filteredTags = availableTags.filter(
-    (tag) =>
-      tag.toLowerCase().includes(query.toLowerCase()) &&
-      !selectedTags.includes(tag),
-  );
-
-  const canCreate =
-    query.trim().length > 0 &&
-    !availableTags.includes(query) &&
-    !selectedTags.includes(query);
 
   const addTag = (tag: string) => {
     onChange([...selectedTags, tag]);
@@ -51,7 +38,7 @@ export default function TagInput({
 
   return (
     <div ref={ref} className="relative">
-      <label className="block text-[1.15rem] font-medium">Tag</label>
+      <label className="block  sm:text-[1.15rem] font-medium">Tag</label>
 
       {/* Selected tags */}
       <div className="flex flex-wrap gap-2 mb-2">
@@ -81,7 +68,7 @@ export default function TagInput({
         }}
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
-        className="w-full border rounded text-[1.125rem] p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full border rounded text-[1rem] sm:text-[1.15rem] p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
 
       {/* Dropdown */}
@@ -94,51 +81,21 @@ export default function TagInput({
       max-h-56 overflow-auto
     "
         >
-          {/* Create new tag */}
-          {canCreate && (
-            <button
-              type="button"
-              onClick={() => addTag(query)}
-              className="
+          <button
+            type="button"
+            onClick={() => addTag(query)}
+            className="
           w-full flex items-center gap-2
           px-3 py-2.5 text-md text-purple-600 font-medium
           hover:bg-purple-50 transition-colors
           border-b border-gray-100
         "
-            >
-              <span className="text-lg">➕</span>
-              <span>
-                Buat tag <strong className="font-semibold">“{query}”</strong>
-              </span>
-            </button>
-          )}
-
-          {/* Empty state */}
-          {filteredTags.length === 0 && !canCreate && (
-            <div className="px-3 py-3 text-sm text-gray-400 text-center">
-              Tidak ada tag yang cocok
-            </div>
-          )}
-
-          {/* Tag list */}
-          {filteredTags.map((tag) => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => addTag(tag)}
-              className="
-          w-full text-left
-          px-3 py-2.5 text-md font-medium text-gray-700
-          hover:bg-lp hover:text-dp
-          transition-colors
-        "
-            >
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-purple-400" />
-                <span>{tag}</span>
-              </div>
-            </button>
-          ))}
+          >
+            <span className="text-lg">➕</span>
+            <span>
+              Buat tag <strong className="font-semibold ">“{query}”</strong>
+            </span>
+          </button>
         </div>
       )}
     </div>

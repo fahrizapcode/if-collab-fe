@@ -44,3 +44,12 @@ export const makeSelectTagsByBoardId = (boardId: string) =>
     (tasks = {}) =>
       Array.from(new Set(Object.values(tasks).flatMap((t) => t.tags ?? []))),
   );
+
+// ambil semua users
+export const selectAllUsers = (state: RootState) => state.users.users;
+
+// factory single user
+export const makeSelectUserByNim = (nim: string) =>
+  createSelector([selectAllUsers], (users) =>
+    users.find((u) => u.nim_nip === nim),
+  );

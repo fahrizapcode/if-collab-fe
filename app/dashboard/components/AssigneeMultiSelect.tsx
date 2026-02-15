@@ -47,7 +47,7 @@ export default function AssigneeMultiSelect({
 
   return (
     <div ref={ref} className="relative">
-      <label className="block text-[1.15rem] font-medium mb-1">
+      <label className="block sm:text-[1.15rem] font-medium mb-1">
         Penanggung Jawab
       </label>
 
@@ -62,7 +62,7 @@ export default function AssigneeMultiSelect({
         {/* LEFT: selected users / placeholder */}
         <div className="flex flex-wrap gap-2">
           {value.length === 0 && (
-            <span className="text-md text-gray-400 py-1.5 px-1">
+            <span className="text-[0.95rem] sm:text-[1.15rem] text-gray-400 py-1.5 px-1">
               Pilih penanggung jawab (maks {max})
             </span>
           )}
