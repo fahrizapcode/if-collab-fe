@@ -31,6 +31,7 @@ export type BoardData = {
   createdAt: string;
   description: string;
   createdBy: string;
+  last_active: string;
 };
 
 export type TabType =
@@ -69,4 +70,6 @@ export type ActiveComponent =
   | "addTask"
   | "projectDetail"
   | "taskDetail"
+  | "notification"
+  | "profile"
   | null;

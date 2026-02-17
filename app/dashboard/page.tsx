@@ -15,21 +15,26 @@ import AddTask from "./components/AddTask";
 import { useAppSelector } from "@/store/hooks";
 import ProjectDetail from "./components/ProjectDetail";
 import TaskDetail from "./components/TaskDetail";
-
+import Notification from "./components/Notification";
+import Profile from "./components/Profile";
+import Dashboard from "./components/Dashboard";
 const Board = dynamic(() => import("./components/Board"), { ssr: false });
 
 export default function DashboardPage() {
   const activeBoard = useAppSelector(
     (state) => state.boards.boards[state.boards.activeBoardId],
   );
+  const boards = useAppSelector((state) => state.boards.boards);
   const [board, setBoard] = useState<BoardData>(activeBoard);
   // mobile-only UI state
   const [isActiveOverlay, setIsActiveOverlay] = useState(false);
   const [taskColumnId, setTaskColumnId] = useState<string>("");
   const [isActiveComponent, setIsActiveComponent] =
     useState<ActiveComponent>(null);
+  const [isBoardView, setIsBoardView] = useState<boolean>(false);
 
   const [activeTaskId, setActiveTaskId] = useState<string>("");
+
   return (
     <div className="flex relative overflow-hidden justify-center">
       {/* SIDEBAR */}
@@ -38,6 +43,8 @@ export default function DashboardPage() {
         setIsActiveComponent={setIsActiveComponent}
         setIsActiveOverlay={setIsActiveOverlay}
         isActiveComponent={isActiveComponent}
+        setIsBoardView={setIsBoardView}
+        isBoardView={isBoardView}
       />
       <ProjectDetail
         isOpen={isActiveComponent === "projectDetail"}
@@ -49,40 +56,46 @@ export default function DashboardPage() {
         setIsActiveComponent={setIsActiveComponent}
         activeTaskId={activeTaskId}
       />
-
-      {/* MAIN CONTENT */}
-      <Board
+      <Notification
+        isOpen={isActiveComponent === "notification"}
         setIsActiveComponent={setIsActiveComponent}
-        setIsActiveOverlay={setIsActiveOverlay}
-        setTaskColumnId={setTaskColumnId}
-        board={board}
-        activeBoard={activeBoard}
-        setBoard={setBoard}
-        setActiveTaskId={setActiveTaskId}
       />
-
+      <Profile
+        isOpen={isActiveComponent === "profile"}
+        setIsActiveComponent={setIsActiveComponent}
+      />
+      {isBoardView === true ? (
+        <Board
+          setIsActiveComponent={setIsActiveComponent}
+          setIsActiveOverlay={setIsActiveOverlay}
+          setTaskColumnId={setTaskColumnId}
+          board={board}
+          activeBoard={activeBoard}
+          setBoard={setBoard}
+          setActiveTaskId={setActiveTaskId}
+        />
+      ) : (
+        <Dashboard boards={boards} setIsBoardView={setIsBoardView} />
+      )}
       {/* RIGHT ASIDE */}
-      <Aside isOpen={isActiveComponent === "stats"} />
-
+      <Aside isOpen={isActiveComponent === "stats"} isBoardView={isBoardView} />
       {/* TOP NAV */}
       <Nav
         setIsActiveComponent={setIsActiveComponent}
         setIsActiveOverlay={setIsActiveOverlay}
+        isBoardView={isBoardView}
       />
-
       {/* ADD PROJECT MODAL */}
       <AddProject
         isOpen={isActiveComponent === "addProject"}
         setIsActiveComponent={setIsActiveComponent}
         setIsActiveOverlay={setIsActiveOverlay}
       />
-
       <Overlay
         isActiveOverlay={isActiveOverlay}
         setIsActiveOverlay={setIsActiveOverlay}
         setIsActiveComponent={setIsActiveComponent}
       />
-
       {/* OPTIONAL DESKTOP OVERLAY */}
       <AddTask
         isOpen={isActiveComponent === "addTask"}

@@ -8,6 +8,8 @@ import Input from "@/components/ui/Input";
 import ButtonIcon from "@/components/ui/ButtonIcon";
 import { ActiveComponent } from "@/types/types";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 type AddProjectProps = {
   isOpen: boolean;
@@ -21,6 +23,7 @@ export default function AddProject({
   setIsActiveOverlay,
 }: AddProjectProps) {
   const dispatch = useAppDispatch();
+  const user = useSelector((state: RootState) => state.user.currentUser);
 
   const [title, setTitle] = useState("");
   const [statuses, setStatuses] = useState<string[]>([
@@ -29,6 +32,7 @@ export default function AddProject({
     "Belum dimulai",
   ]);
   const [deadline, setDeadline] = useState("");
+  if (!user) return null;
 
   const handleAddStatus = () => {
     setStatuses((prev) => [...prev, "Status baru"]);
@@ -59,7 +63,7 @@ export default function AddProject({
         title,
         statuses,
         deadline: deadline || undefined,
-        createdBy: "123705001",
+        createdBy: user.nim_nip,
       }),
     );
 

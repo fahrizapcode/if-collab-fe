@@ -45,6 +45,9 @@ const boardsSlice = createSlice({
     setActiveBoard(state, action: PayloadAction<string>) {
       state.activeBoardId = action.payload;
     },
+    deleteBoard: (state, action: PayloadAction<string>) => {
+      delete state.boards[action.payload];
+    },
 
     // 🧲 pindah task
     moveTask(state, action: PayloadAction<MoveTaskPayload>) {
@@ -141,6 +144,7 @@ const boardsSlice = createSlice({
         description: "",
         createdAt: new Date().toLocaleDateString(),
         createdBy,
+        last_active: new Date().toLocaleDateString(),
       };
 
       // langsung set aktif ke project baru
@@ -221,9 +225,22 @@ const boardsSlice = createSlice({
       const board = state.boards[boardId];
       if (!board) return;
 
+      const member = board.members[memberId];
+      if (!member) return;
+
+      // 🔥 Hitung jumlah leader
+      const totalLeaders = Object.values(board.members).filter(
+        (m) => m.role === "leader",
+      ).length;
+
+      // ❌ Jika dia leader dan cuma satu → batal hapus
+      if (member.role === "leader" && totalLeaders <= 1) {
+        return;
+      }
+
       delete board.members[memberId];
 
-      // opsional: hapus dia dari semua assignTo
+      // Bersihkan assignTo
       Object.values(board.tasks).forEach((task) => {
         task.assignTo = task.assignTo?.filter((id) => id !== memberId);
       });
@@ -414,6 +431,7 @@ export const {
   updateBoardMeta,
   updateTask,
   deleteTask,
+  deleteBoard,
 } = boardsSlice.actions;
 
 export default boardsSlice.reducer;

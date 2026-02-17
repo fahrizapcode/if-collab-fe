@@ -4,8 +4,6 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { BoardData, Role, TabType } from "@/types/types";
 import { ActiveComponent } from "@/types/types";
-import { selectUserByNim } from "@/store/usersSlice";
-import { selectUsersByNims } from "@/store/usersSlice";
 import {
   addColumn,
   addMember,
@@ -14,6 +12,7 @@ import {
   updateColumn,
   updateMemberRole,
   updateBoardMeta,
+  removeMember,
 } from "@/store/boardsSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -95,10 +94,6 @@ export default function ProjectDetail({
   // Sekarang kita ambil contoh deadline dari salah satu task (opsional)
   const firstTaskDeadline =
     Object.values(activeBoard.tasks)[0]?.deadline ?? null;
-
-  const formattedDeadline = firstTaskDeadline
-    ? new Date(firstTaskDeadline).toISOString().split("T")[0]
-    : "";
 
   const totalMembers = Object.keys(activeBoard.members).length;
   const totalTasks = Object.keys(activeBoard.tasks).length;
@@ -382,7 +377,11 @@ export default function ProjectDetail({
                                 }),
                               )
                             }
-                            className="text-red-600 text-sm"
+                            className={`text-sm ${
+                              isMinStatus
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "text-red-600"
+                            }`}
                           >
                             Hapus
                           </button>
@@ -409,7 +408,7 @@ export default function ProjectDetail({
                   {/* LEFT */}
                   <div className="flex items-center gap-3">
                     <Image
-                      src={user.avatar}
+                      src={user.avatar || ""}
                       width={40}
                       height={40}
                       alt={user.name}
@@ -457,12 +456,15 @@ export default function ProjectDetail({
 
                     {/* Delete Icon */}
                     <button
-                      disabled={isMinStatus}
-                      className={`text-sm ${
-                        isMinStatus
-                          ? "text-gray-400 cursor-not-allowed"
-                          : "text-red-600"
-                      }`}
+                      onClick={() =>
+                        dispatch(
+                          removeMember({
+                            boardId: activeBoard.id,
+                            memberId: user.nim_nip,
+                          }),
+                        )
+                      }
+                      className="text-red-500 hover:text-red-700 text-sm font-medium"
                     >
                       Hapus
                     </button>
@@ -523,7 +525,6 @@ export default function ProjectDetail({
             </div>
 
             {/* User List */}
-            {/* User List */}
             {search.trim() !== "" && (
               <div className="space-y-3">
                 {allUsers
@@ -543,7 +544,7 @@ export default function ProjectDetail({
                         {/* LEFT */}
                         <div className="flex items-center gap-3">
                           <Image
-                            src={user.avatar}
+                            src={user.avatar || ""}
                             width={40}
                             height={40}
                             alt={user.name}

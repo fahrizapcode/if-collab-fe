@@ -11,11 +11,15 @@ export default function Sidebar({
   setIsActiveComponent,
   isActiveComponent,
   setIsActiveOverlay,
+  setIsBoardView,
+  isBoardView,
 }: {
   isOpen: boolean;
   isActiveComponent: ActiveComponent;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsBoardView: React.Dispatch<React.SetStateAction<boolean>>;
+  isBoardView: boolean;
 }) {
   const dispatch = useAppDispatch();
 
@@ -50,7 +54,7 @@ export default function Sidebar({
       </div>
 
       {/* Project List */}
-      <nav className="flex-1 px-1 sm:px-2 space-y-2">
+      <nav className="flex-1 px-1 sm:px-2 space-y-2 overflow-y-scroll">
         <ButtonIcon
           srcIcon="/icons/add-white.svg"
           iconHeight={22}
@@ -78,6 +82,36 @@ export default function Sidebar({
         >
           Proyek Baru
         </ButtonIcon>
+        {/* Dashboard Button */}
+        <button
+          onClick={() => {
+            if (isActiveComponent === "taskDetail") {
+              setIsActiveComponent(null);
+            }
+
+            setIsBoardView(false);
+          }}
+          className={`
+    w-full text-left
+    px-3 sm:px-4
+    py-3.5 sm:py-5
+    rounded-md
+    text-[0.95rem] sm:text-lg
+    font-medium
+    transition-colors
+    flex items-center gap-x-2
+    ${isBoardView === false ? "bg-lp text-dp" : "bg-white text-gry hover:bg-lp"}
+  `}
+        >
+          <Image
+            src={`/icons/document${isBoardView === false ? "-purple" : "-gray"}.svg`}
+            alt="dashboard"
+            width={22}
+            height={22}
+            className="sm:w-[26px]"
+          />
+          <span>Dashboard</span>
+        </button>
 
         {Object.values(boards).map((board) => {
           const isActive = board.id === activeBoardId;
@@ -91,6 +125,7 @@ export default function Sidebar({
                 }
 
                 dispatch(setActiveBoard(board.id));
+                setIsBoardView(true);
               }}
               className={`
               w-full text-left
@@ -101,11 +136,12 @@ export default function Sidebar({
               font-medium
               transition-colors
               flex items-center gap-x-2
-              ${isActive ? "bg-lp text-dp" : "bg-white text-gry hover:bg-lp"}
+              ${isActive && isBoardView ? "bg-lp text-dp" : "bg-white text-gry hover:bg-lp"}
+              
             `}
             >
               <Image
-                src={`/icons/document${isActive ? "-purple" : "-gray"}.svg`}
+                src={`/icons/document${isActive && isBoardView ? "-purple" : "-gray"}.svg`}
                 alt="project"
                 width={22}
                 height={22}

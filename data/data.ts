@@ -14,6 +14,7 @@ export const initialBoards: BoardsState = {
       description: "Tugas Sehari hari",
       createdBy: "1237050001",
       deadline: "2026-01-03T08:00:00.000Z",
+      last_active: "2026-01-30T11:20:00.000Z",
       members: {
         "1237050001": { role: "leader" }, // Andi Pratama
         "1237050002": { role: "manager" }, // Budi Santoso
@@ -305,7 +306,7 @@ export const initialBoards: BoardsState = {
       description: "Project aplikasi freelance untuk client eksternal.",
       createdBy: "1237050007",
       deadline: "2026-02-10T08:00:00.000Z",
-
+      last_active: "2026-02-16T09:00:00.000Z",
       members: {
         "1237050007": { role: "leader" }, // user-007
         "1237050008": { role: "manager" }, // user-008
@@ -506,6 +507,7 @@ export const initialBoards: BoardsState = {
         "Pengembangan MVP startup dari validasi masalah hingga public launch.",
       createdBy: "1237050001",
       deadline: "2026-01-03T08:00:00.000Z",
+      last_active: "2026-02-10T14:50:00.000Z",
       members: {
         "1237050001": { role: "leader" }, // user-001
         "1237050002": { role: "manager" }, // user-002
@@ -757,6 +759,7 @@ export const initialBoards: BoardsState = {
       description: "Task personal untuk pengembangan diri dan karier.",
       createdBy: "1237050001",
       deadline: "2026-04-20T08:00:00.000Z",
+      last_active: "2026-01-28T10:30:00.000Z",
 
       members: {
         "1237050001": { role: "leader" }, // owner
@@ -950,6 +953,7 @@ export const initialBoards: BoardsState = {
         "Project penelitian dari perumusan topik hingga submit jurnal.",
       createdBy: "1237050005",
       deadline: "2026-05-25T08:00:00.000Z",
+      last_active: "2026-02-15T15:40:00.000Z",
 
       members: {
         "1237050005": { role: "leader" }, // lead researcher
@@ -1153,6 +1157,292 @@ export const initialBoards: BoardsState = {
           title: "Done",
           taskIds: ["14", "15"],
         },
+      },
+
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "review", "done"],
+    },
+
+    "board-6": {
+      id: "board-6",
+      title: "Mobile App Development",
+      createdAt: "2026-02-01T08:00:00.000Z",
+      description:
+        "Pengembangan aplikasi mobile dari perencanaan hingga rilis.",
+      createdBy: "1237050005",
+      deadline: "2026-06-30T08:00:00.000Z",
+      last_active: "2026-02-15T16:00:00.000Z",
+
+      members: {
+        "1237050005": { role: "leader" },
+        "1237050002": { role: "manager" },
+        "1237050003": { role: "member" },
+        "1237050006": { role: "member" },
+        "1237050009": { role: "observer" },
+      },
+
+      tasks: {
+        "1": {
+          id: "1",
+          title: "Requirement Gathering",
+          description: "Mengumpulkan kebutuhan aplikasi.",
+          priority: "high",
+          tags: ["planning"],
+          assignTo: ["1237050005"],
+          createdBy: "1237050005",
+          deadline: "2026-02-10T08:00:00.000Z",
+          createdAt: "2026-02-01T08:10:00.000Z",
+        },
+        "2": {
+          id: "2",
+          title: "UI/UX Design",
+          description: "Desain tampilan aplikasi.",
+          priority: "high",
+          tags: ["design"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-02-15T08:00:00.000Z",
+          createdAt: "2026-02-01T08:20:00.000Z",
+        },
+        "3": {
+          id: "3",
+          title: "API Integration",
+          description: "Integrasi backend API.",
+          priority: "high",
+          tags: ["backend"],
+          assignTo: ["1237050006"],
+          createdBy: "1237050005",
+          deadline: "2026-02-20T08:00:00.000Z",
+          createdAt: "2026-02-01T08:30:00.000Z",
+        },
+        "4": {
+          id: "4",
+          title: "Authentication",
+          description: "Implementasi login & register.",
+          priority: "high",
+          tags: ["security"],
+          assignTo: ["1237050006"],
+          createdBy: "1237050005",
+          deadline: "2026-02-25T08:00:00.000Z",
+          createdAt: "2026-02-01T08:40:00.000Z",
+        },
+        "5": {
+          id: "5",
+          title: "Testing",
+          description: "Pengujian fitur aplikasi.",
+          priority: "medium",
+          tags: ["testing"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-03-01T08:00:00.000Z",
+          createdAt: "2026-02-01T08:50:00.000Z",
+        },
+      },
+
+      columns: {
+        backlog: { id: "backlog", title: "Backlog", taskIds: [] },
+        todo: { id: "todo", title: "Todo", taskIds: ["1", "2"] },
+        doing: { id: "doing", title: "Doing", taskIds: ["3"] },
+        review: { id: "review", title: "Review", taskIds: ["4"] },
+        done: { id: "done", title: "Done", taskIds: ["5"] },
+      },
+
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "review", "done"],
+    },
+    "board-7": {
+      id: "board-7",
+      title: "Website Redesign",
+      createdAt: "2026-02-05T08:00:00.000Z",
+      description: "Redesign website company agar lebih modern.",
+      createdBy: "1237050005",
+      deadline: "2026-05-10T08:00:00.000Z",
+      last_active: "2026-02-15T16:10:00.000Z",
+
+      members: {
+        "1237050005": { role: "leader" },
+        "1237050002": { role: "manager" },
+        "1237050003": { role: "member" },
+      },
+
+      tasks: {
+        "1": {
+          id: "1",
+          title: "Audit Current Website",
+          description: "Evaluasi website lama.",
+          priority: "high",
+          tags: ["audit"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-02-12T08:00:00.000Z",
+          createdAt: "2026-02-05T08:10:00.000Z",
+        },
+        "2": {
+          id: "2",
+          title: "Wireframing",
+          description: "Buat wireframe baru.",
+          priority: "high",
+          tags: ["design"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-02-18T08:00:00.000Z",
+          createdAt: "2026-02-05T08:20:00.000Z",
+        },
+        "3": {
+          id: "3",
+          title: "Frontend Implementation",
+          description: "Implementasi UI baru.",
+          priority: "high",
+          tags: ["frontend"],
+          assignTo: ["1237050006"],
+          createdBy: "1237050005",
+          deadline: "2026-03-01T08:00:00.000Z",
+          createdAt: "2026-02-05T08:30:00.000Z",
+        },
+      },
+
+      columns: {
+        backlog: { id: "backlog", title: "Backlog", taskIds: [] },
+        todo: { id: "todo", title: "Todo", taskIds: ["1"] },
+        doing: { id: "doing", title: "Doing", taskIds: ["2"] },
+        review: { id: "review", title: "Review", taskIds: [] },
+        done: { id: "done", title: "Done", taskIds: ["3"] },
+      },
+
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "review", "done"],
+    },
+    "board-8": {
+      id: "board-8",
+      title: "Machine Learning Project",
+      createdAt: "2026-02-07T08:00:00.000Z",
+      description: "Pengembangan model machine learning.",
+      createdBy: "1237050005",
+      deadline: "2026-07-01T08:00:00.000Z",
+      last_active: "2026-02-15T16:20:00.000Z",
+
+      members: {
+        "1237050005": { role: "leader" },
+        "1237050003": { role: "member" },
+        "1237050006": { role: "member" },
+      },
+
+      tasks: {
+        "1": {
+          id: "1",
+          title: "Dataset Preparation",
+          description: "Menyiapkan dataset.",
+          priority: "high",
+          tags: ["data"],
+          assignTo: ["1237050006"],
+          createdBy: "1237050005",
+          deadline: "2026-02-15T08:00:00.000Z",
+          createdAt: "2026-02-07T08:10:00.000Z",
+        },
+        "2": {
+          id: "2",
+          title: "Model Training",
+          description: "Training model ML.",
+          priority: "high",
+          tags: ["training"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-02-25T08:00:00.000Z",
+          createdAt: "2026-02-07T08:20:00.000Z",
+        },
+        "3": {
+          id: "3",
+          title: "Model Evaluation",
+          description: "Evaluasi performa model.",
+          priority: "medium",
+          tags: ["evaluation"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-03-05T08:00:00.000Z",
+          createdAt: "2026-02-07T08:30:00.000Z",
+        },
+      },
+
+      columns: {
+        backlog: { id: "backlog", title: "Backlog", taskIds: [] },
+        todo: { id: "todo", title: "Todo", taskIds: ["1"] },
+        doing: { id: "doing", title: "Doing", taskIds: ["2"] },
+        review: { id: "review", title: "Review", taskIds: ["3"] },
+        done: { id: "done", title: "Done", taskIds: [] },
+      },
+
+      activityLogs: [],
+      columnOrder: ["backlog", "todo", "doing", "review", "done"],
+    },
+    "board-12": {
+      id: "board-12",
+      title: "Startup Product Launch",
+      createdAt: "2026-02-15T08:00:00.000Z",
+      description: "Persiapan launching produk startup.",
+      createdBy: "1237050005",
+      deadline: "2026-07-15T08:00:00.000Z",
+      last_active: "2026-02-15T17:30:00.000Z",
+
+      members: {
+        "1237050005": { role: "leader" },
+        "1237050002": { role: "manager" },
+        "1237050003": { role: "member" },
+        "1237050009": { role: "observer" },
+      },
+
+      tasks: {
+        "1": {
+          id: "1",
+          title: "Product Validation",
+          description: "Validasi ide produk.",
+          priority: "high",
+          tags: ["validation"],
+          assignTo: ["1237050005"],
+          createdBy: "1237050005",
+          deadline: "2026-02-20T08:00:00.000Z",
+          createdAt: "2026-02-15T08:10:00.000Z",
+        },
+        "2": {
+          id: "2",
+          title: "MVP Development",
+          description: "Membangun MVP.",
+          priority: "high",
+          tags: ["development"],
+          assignTo: ["1237050006"],
+          createdBy: "1237050005",
+          deadline: "2026-03-15T08:00:00.000Z",
+          createdAt: "2026-02-15T08:20:00.000Z",
+        },
+        "3": {
+          id: "3",
+          title: "Beta Testing",
+          description: "Testing dengan user awal.",
+          priority: "medium",
+          tags: ["testing"],
+          assignTo: ["1237050003"],
+          createdBy: "1237050005",
+          deadline: "2026-04-01T08:00:00.000Z",
+          createdAt: "2026-02-15T08:30:00.000Z",
+        },
+        "4": {
+          id: "4",
+          title: "Official Launch",
+          description: "Launching produk resmi.",
+          priority: "high",
+          tags: ["launch"],
+          assignTo: ["1237050002"],
+          createdBy: "1237050005",
+          deadline: "2026-07-15T08:00:00.000Z",
+          createdAt: "2026-02-15T08:40:00.000Z",
+        },
+      },
+
+      columns: {
+        backlog: { id: "backlog", title: "Backlog", taskIds: [] },
+        todo: { id: "todo", title: "Todo", taskIds: ["1"] },
+        doing: { id: "doing", title: "Doing", taskIds: ["2"] },
+        review: { id: "review", title: "Review", taskIds: ["3"] },
+        done: { id: "done", title: "Done", taskIds: ["4"] },
       },
 
       activityLogs: [],

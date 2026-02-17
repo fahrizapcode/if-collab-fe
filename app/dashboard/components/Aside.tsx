@@ -15,7 +15,13 @@ const ACCENT_COLORS = [
   "bg-rose-300",
 ];
 
-export default function Aside({ isOpen }: { isOpen: boolean }) {
+export default function Aside({
+  isOpen,
+  isBoardView,
+}: {
+  isOpen: boolean;
+  isBoardView: boolean;
+}) {
   const activityLogs = useAppSelector(selectActiveBoardLogs);
 
   const activeBoard = useAppSelector(
@@ -48,6 +54,7 @@ export default function Aside({ isOpen }: { isOpen: boolean }) {
         bottom-[-10]
         border border-lightgry
         rounded-3xl
+        ${!isBoardView && "hidden"}
         z-20
         lg:border-none
         transition-transform duration-300 ease-in-out
