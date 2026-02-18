@@ -1,17 +1,30 @@
+// ==============================
+// TASK
+// ==============================
+
 export type Priority = "low" | "medium" | "high";
+
 export type Task = {
   id: string;
   title: string;
+  description?: string;
   tags?: string[];
   priority: Priority;
-  description?: string;
   assignTo: string[];
   createdAt: string;
   createdBy: string;
   deadline?: string;
 };
 
+// ==============================
+// ROLE
+// ==============================
+
 export type Role = "leader" | "manager" | "member" | "observer";
+
+// ==============================
+// COLUMN
+// ==============================
 
 export type Column = {
   id: string;
@@ -19,31 +32,9 @@ export type Column = {
   taskIds: string[];
 };
 
-export type BoardData = {
-  id: string;
-  title: string;
-  members: Record<string, { role: Role }>;
-  tasks: Record<string, Task>;
-  columns: Record<string, Column>;
-  activityLogs: ActivityLog[];
-  columnOrder: string[];
-  deadline?: string;
-  createdAt: string;
-  description: string;
-  createdBy: string;
-  last_active: string;
-};
-
-export type TabType =
-  | "status"
-  | "kolaborator"
-  | "pengaturan"
-  | "tambah-kolaborator";
-
-export type BoardsState = {
-  activeBoardId: string;
-  boards: Record<string, BoardData>;
-};
+// ==============================
+// ACTIVITY
+// ==============================
 
 export type Activity = {
   id: number;
@@ -53,16 +44,53 @@ export type Activity = {
   timeAgo: string;
   accentColor: string;
 };
+
 export type ActivityLog = {
   id: string;
-  actorId: string; // ⬅️ REQUIRED
+  actorId: string; // required
   taskId: string;
   fromColumnId: string;
   toColumnId: string;
   createdAt: string;
 };
 
-// types/ui.ts
+// ==============================
+// BOARD
+// ==============================
+
+export type BoardData = {
+  id: string;
+  title: string;
+  description: string;
+
+  members: Record<string, { role: Role }>;
+  tasks: Record<string, Task>;
+  columns: Record<string, Column>;
+  columnOrder: string[];
+
+  activityLogs: ActivityLog[];
+
+  deadline?: string;
+  createdAt: string;
+  createdBy: string;
+  last_active: string;
+};
+
+export type BoardsState = {
+  activeBoardId: string;
+  boards: Record<string, BoardData>;
+};
+
+// ==============================
+// UI STATE
+// ==============================
+
+export type TabType =
+  | "status"
+  | "kontributor"
+  | "pengaturan"
+  | "tambah-kontributor";
+
 export type ActiveComponent =
   | "sidebar"
   | "addProject"

@@ -1,12 +1,9 @@
-import { User } from "@/types/typesUser";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { User } from "@/types/typesUser";
 
-export interface Notification {
-  id: string;
-  content: string;
-  board_title: string;
-  created_at: string;
-}
+// ==============================
+// STATE
+// ==============================
 
 interface UserState {
   currentUser: User | null;
@@ -16,36 +13,54 @@ const initialState: UserState = {
   currentUser: null,
 };
 
+// ==============================
+// SLICE
+// ==============================
+
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    // ✅ SET USER (LOGIN)
+    // ==========================
+    // AUTH
+    // ==========================
+
     setUser(state, action: PayloadAction<User>) {
       state.currentUser = action.payload;
     },
-    // ✅ UPDATE PROFILE
-    updateProfile(
-      state,
-      action: PayloadAction<{ name?: string; password?: string }>,
-    ) {
-      if (!state.currentUser) return;
 
-      if (action.payload.name !== undefined) {
-        state.currentUser.name = action.payload.name;
-      }
-
-      if (action.payload.password !== undefined) {
-        state.currentUser.password = action.payload.password;
-      }
-    },
-
-    // ✅ LOGOUT (DELETE USER SESSION)
     logout(state) {
       state.currentUser = null;
     },
 
-    // ✅ DELETE NOTIFICATION
+    // ==========================
+    // PROFILE
+    // ==========================
+
+    updateProfile(
+      state,
+      action: PayloadAction<{
+        name?: string;
+        password?: string;
+      }>,
+    ) {
+      if (!state.currentUser) return;
+
+      const { name, password } = action.payload;
+
+      if (name !== undefined) {
+        state.currentUser.name = name;
+      }
+
+      if (password !== undefined) {
+        state.currentUser.password = password;
+      }
+    },
+
+    // ==========================
+    // NOTIFICATIONS
+    // ==========================
+
     deleteNotification(
       state,
       action: PayloadAction<{ notificationId: string }>,
@@ -57,13 +72,12 @@ const userSlice = createSlice({
       );
     },
 
-    // ✅ CLEAR ALL NOTIFICATIONS
     clearNotifications(state) {
       if (!state.currentUser) return;
+
       state.currentUser.notifications = [];
     },
 
-    // ✅ UPDATE NOTIFICATION (kalau suatu saat perlu)
     updateNotification(
       state,
       action: PayloadAction<{
@@ -86,13 +100,17 @@ const userSlice = createSlice({
   },
 });
 
+// ==============================
+// EXPORTS
+// ==============================
+
 export const {
   setUser,
   logout,
+  updateProfile,
   deleteNotification,
   clearNotifications,
   updateNotification,
-  updateProfile,
 } = userSlice.actions;
 
 export default userSlice.reducer;

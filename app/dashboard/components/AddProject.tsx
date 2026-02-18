@@ -1,21 +1,26 @@
 "use client";
 
 import { useState } from "react";
+import { useSelector } from "react-redux";
+import Image from "next/image";
+
 import { useAppDispatch } from "@/store/hooks";
 import { addProject } from "@/store/boardsSlice";
+import { RootState } from "@/store/store";
+
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import ButtonIcon from "@/components/ui/ButtonIcon";
+
 import { ActiveComponent } from "@/types/types";
-import Image from "next/image";
-import { useSelector } from "react-redux";
-import { RootState } from "@/store/store";
 
 type AddProjectProps = {
   isOpen: boolean;
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
 };
+
+const DEFAULT_STATUSES = ["Belum dimulai", "Belum dimulai", "Belum dimulai"];
 
 export default function AddProject({
   isOpen,
@@ -26,13 +31,14 @@ export default function AddProject({
   const user = useSelector((state: RootState) => state.user.currentUser);
 
   const [title, setTitle] = useState("");
-  const [statuses, setStatuses] = useState<string[]>([
-    "Belum dimulai",
-    "Belum dimulai",
-    "Belum dimulai",
-  ]);
+  const [statuses, setStatuses] = useState<string[]>(DEFAULT_STATUSES);
   const [deadline, setDeadline] = useState("");
+
   if (!user) return null;
+
+  // ===============================
+  // Handlers
+  // ===============================
 
   const handleAddStatus = () => {
     setStatuses((prev) => [...prev, "Status baru"]);
@@ -53,6 +59,12 @@ export default function AddProject({
     });
   };
 
+  const resetForm = () => {
+    setTitle("");
+    setStatuses(DEFAULT_STATUSES);
+    setDeadline("");
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -67,23 +79,30 @@ export default function AddProject({
       }),
     );
 
-    // reset form
-    setTitle("");
-    setStatuses(["Belum dimulai", "Belum dimulai", "Belum dimulai"]);
-    setDeadline("");
+    resetForm();
     setIsActiveOverlay(false);
     setIsActiveComponent(null);
   };
 
+  // ===============================
+  // Render
+  // ===============================
+
   return (
     <form
       onSubmit={handleSubmit}
-      className={`h-[90dvh] sm:h-[80dvh]  w-full sm:w-160 rounded-xl bg-white
-      transition-transform duration-300 ease-in-out absolute z-31 p-6
-      ${isOpen ? "translate-y-32 md:translate-y-18 fixed" : "translate-y-[110vh]"}`}
+      className={`
+    h-[75dvh] h-[85vh]
+    w-full sm:w-160
+    rounded-xl bg-white
+    transition-transform duration-300 ease-in-out
+    absolute z-31 p-6
+    flex flex-col
+    ${isOpen ? "translate-y-28 md:translate-y-18 fixed" : "translate-y-[110vh]"}
+  `}
     >
-      <h2 className="text-2xl sm:text-3xl font-semibold mb-4 flex justify-between">
-        Proyek Baru{" "}
+      <h2 className="text-2xl sm:text-2xl items-center font-semibold mb-4 flex justify-between">
+        Proyek Baru
         <span>
           <Image
             src="/icons/add.svg"
@@ -96,81 +115,93 @@ export default function AddProject({
         </span>
       </h2>
 
-      {/* Nama Proyek */}
-      <div className="mb-4">
-        <label className="text-md font-medium">Nama Proyek</label>
-        <Input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Masukkan nama proyek"
-          name=""
-        />
+      {/* SCROLL AREA */}
+      <div className="h-120 sm:h-100 overflow-y-scroll pr-1">
+        {/* Nama Proyek */}
+        <div className="mb-4">
+          <label className="text-[1rem] font-medium">Nama Proyek</label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Masukkan nama proyek"
+            name=""
+          />
+        </div>
+
+        {/* Status */}
+        <div className="mb-4 pt-2">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[1rem]  font-medium">Status</span>
+            <span className="text-sm bg-purple-600 text-white rounded-full h-6 w-6 flex items-center justify-center">
+              {statuses.length}
+            </span>
+          </div>
+
+          <div className="space-y-2 ">
+            {statuses.map((status, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={status}
+                  onChange={(e) => handleStatusChange(index, e.target.value)}
+                  name=""
+                />
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveStatus(index)}
+                  disabled={statuses.length <= 1}
+                  className="h-12 w-12 flex items-center justify-center
+              rounded-md text-gray-500 hover:text-red-500
+              hover:bg-red-50 transition disabled:opacity-40"
+                  aria-label="Hapus status"
+                >
+                  <Image
+                    src={"/icons/add.svg"}
+                    className="rotate-45"
+                    alt={""}
+                    width={30}
+                    height={30}
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <ButtonIcon
+            srcIcon={"/icons/add-white.svg"}
+            iconHeight={24}
+            iconWidth={24}
+            className="mt-1.5 sm:mt-2 text-[0.85rem] sm:text-[0.95rem] py-3 rounded-lg  w-50"
+            fullWidth={false}
+            onClick={handleAddStatus}
+          >
+            Tambah Status
+          </ButtonIcon>
+        </div>
+
+        {/* Deadline */}
+        <div className="mb-4">
+          <Input
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
+            label="Tenggat Waktu (Opsional)"
+            name="deadline"
+            className=" w-[98%]"
+          />
+        </div>
       </div>
 
-      {/* Status */}
-      <div className="mb-4 h-66 sm:h-76 overflow-y-scroll pt-2">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-md font-medium">Status</span>
-          <span className="text-sm bg-purple-600 text-white rounded-full h-6 w-6 flex items-center justify-center">
-            {statuses.length}
-          </span>
-        </div>
-
-        <div className="space-y-2 sm:px-1">
-          {statuses.map((status, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <Input
-                value={status}
-                onChange={(e) => handleStatusChange(i, e.target.value)}
-                name=""
-              />
-
-              <button
-                type="button"
-                onClick={() => handleRemoveStatus(i)}
-                disabled={statuses.length <= 1}
-                className="h-12 w-12 flex items-center justify-center
-                rounded-md text-gray-500 hover:text-red-500
-                hover:bg-red-50 transition disabled:opacity-40"
-                aria-label="Hapus status"
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-        <ButtonIcon
-          srcIcon={"/icons/add-white.svg"}
-          iconHeight={24}
-          iconWidth={24}
-          className="mt-1.5 sm:mt-2 text-[0.85rem] sm:text-[1.1rem] py-3.5 rounded-lg sm:ml-1 w-50"
-          fullWidth={false}
-          onClick={handleAddStatus}
+      {/* FIXED BOTTOM BUTTON */}
+      <div className="pt-4  mt-3">
+        <Button
+          type="submit"
+          className="text-[1rem] sm:text-[1.1rem] py-4 w-full"
+          disabled={!title.trim()}
         >
-          Tambah Status
-        </ButtonIcon>
+          Buat Proyek
+        </Button>
       </div>
-
-      {/* Deadline */}
-      <div className="mb-8">
-        <Input
-          type="date"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
-          label="Tenggat Waktu (Opsional)"
-          name="deadline"
-          className="sm:ml-1 w-[98%]"
-        />
-      </div>
-
-      {/* Submit */}
-      <Button
-        type="submit"
-        className="text-[1rem] sm:text-[1.175rem] py-4"
-        disabled={!title.trim()}
-      >
-        Buat Proyek
-      </Button>
     </form>
   );
 }

@@ -1,9 +1,5 @@
 import Image from "next/image";
-
-type User = {
-  name: string;
-  avatar: string;
-};
+import { User } from "@/types/typesUser";
 
 type AvatarStackProps = {
   users: User[];
@@ -17,50 +13,63 @@ export default function AvatarStack({
   size = 32,
 }: AvatarStackProps) {
   const visibleUsers = users.slice(0, max);
-  const remaining = users.length - max;
+  const remainingCount = users.length - max;
+  const overlapOffset = -size / 3;
 
   return (
     <div className="flex items-center">
-      {visibleUsers.map((user, index) => (
-        <div
-          key={user.name + index}
-          className="relative group"
-          style={{
-            marginLeft: index === 0 ? 0 : -size / 3,
-            width: size,
-            height: size,
-          }}
-        >
-          <Image
-            src={user.avatar}
-            alt={user.name}
-            width={size}
-            height={size}
-            className="rounded-full border-2 border-white object-cover"
-          />
+      {visibleUsers.map((user, index) => {
+        const marginLeft = index === 0 ? 0 : overlapOffset;
 
-          {/* Tooltip */}
+        return (
           <div
-            className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 
-            whitespace-nowrap rounded bg-black px-2 py-1 text-xs text-white opacity-0 
-            transition-opacity group-hover:opacity-100"
+            key={`${user.name}${index}`}
+            className="relative group"
+            style={{
+              marginLeft,
+              width: size,
+              height: size,
+            }}
           >
-            {user.name}
-          </div>
-        </div>
-      ))}
+            <Image
+              src={user.avatar || "/images/default.png"}
+              alt={user.name}
+              width={size}
+              height={size}
+              className="rounded-full border-2 border-white object-cover"
+            />
 
-      {remaining > 0 && (
+            {/* Tooltip */}
+            <div
+              className="
+                pointer-events-none 
+                absolute -top-8 left-1/2 -translate-x-1/2
+                whitespace-nowrap rounded bg-black 
+                px-2 py-1 text-xs text-white 
+                opacity-0 transition-opacity 
+                group-hover:opacity-100
+              "
+            >
+              {user.name}
+            </div>
+          </div>
+        );
+      })}
+
+      {remainingCount > 0 && (
         <div
-          className="flex items-center justify-center rounded-full border-2 border-white 
-          bg-gray-500 text-xs font-semibold text-white"
+          className="
+            flex items-center justify-center 
+            rounded-full border-2 border-white 
+            bg-gray-500 text-xs font-semibold text-white
+          "
           style={{
-            marginLeft: -size / 3,
+            marginLeft: overlapOffset,
             width: size,
             height: size,
           }}
         >
-          +{remaining}
+          +{remainingCount}
         </div>
       )}
     </div>

@@ -1,83 +1,116 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useDispatch } from "react-redux";
+
 import { BoardData } from "@/types/types";
 import { User } from "@/types/typesUser";
 import { useAppSelector } from "@/store/hooks";
 import { selectAllUsers } from "@/store/usersSlice";
-import { calculateDynamicProgress } from "../helpers";
-import Image from "next/image";
 import { setActiveBoard } from "@/store/boardsSlice";
-import { useDispatch } from "react-redux";
 
-export default function Dashboard({
-  boards,
-  setIsBoardView,
-}: {
+import { calculateDynamicProgress } from "../helpers";
+import BoardCard from "./BoardCard";
+
+type DashboardProps = {
   boards: Record<string, BoardData>;
   setIsBoardView: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-  const allUsers = useAppSelector(selectAllUsers);
+};
+
+export default function Dashboard({ boards, setIsBoardView }: DashboardProps) {
+  const [MAX_VISIBLE, setMaxVisible] = useState(3);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 640) {
+        setMaxVisible(5);
+      } else {
+        setMaxVisible(3);
+      }
+    };
+
+    handleResize(); // run pertama kali
+    window.addEventListener("resize", handleResize);
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const dispatch = useDispatch();
+  const allUsers = useAppSelector(selectAllUsers);
 
-  const userMap: Record<string, User> = Object.fromEntries(
-    allUsers.map((u) => [u.nim_nip, u]),
-  );
-
+  // ================= STATE =================
   const [showAllProjects, setShowAllProjects] = useState(false);
-
-  // ================= SEARCH & SORT STATE =================
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "progress">("name");
   const [descending, setDescending] = useState(false);
   const [showSortModal, setShowSortModal] = useState(false);
 
-  const MAX_VISIBLE = 5;
+  // ================= MEMOIZED DATA =================
 
-  const boardsArray = Object.values(boards);
+  const userMap: Record<string, User> = useMemo(() => {
+    return Object.fromEntries(allUsers.map((user) => [user.nim_nip, user]));
+  }, [allUsers]);
 
-  const visibleBoards = showAllProjects
-    ? boardsArray
-    : boardsArray.slice(0, MAX_VISIBLE);
+  const boardsArray = useMemo(() => {
+    return Object.values(boards);
+  }, [boards]);
+  const visibleBoards = useMemo(() => {
+    return showAllProjects ? boardsArray : boardsArray.slice(0, MAX_VISIBLE);
+  }, [showAllProjects, boardsArray, MAX_VISIBLE]);
 
-  // ================= FILTER & SORT =================
-  const processedBoards = boardsArray
-    .map((board) => {
-      const progress = calculateDynamicProgress(
-        board.columns,
-        board.columnOrder,
-      );
+  const processedBoards = useMemo(() => {
+    return boardsArray
+      .map((board) => {
+        const progress = calculateDynamicProgress(
+          board.columns,
+          board.columnOrder,
+        );
 
-      return {
-        ...board,
-        percent: Math.round(progress),
-      };
-    })
-    .filter((board) => board.title.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      let result = 0;
+        return {
+          ...board,
+          percent: Math.round(progress),
+        };
+      })
+      .filter((board) =>
+        board.title.toLowerCase().includes(search.toLowerCase()),
+      )
+      .sort((a, b) => {
+        let result = 0;
 
-      if (sortBy === "name") {
-        result = a.title.localeCompare(b.title);
-      }
+        if (sortBy === "name") {
+          result = a.title.localeCompare(b.title);
+        }
 
-      if (sortBy === "progress") {
-        result = a.percent - b.percent;
-      }
+        if (sortBy === "progress") {
+          result = a.percent - b.percent;
+        }
 
-      return descending ? -result : result;
-    });
+        return descending ? -result : result;
+      });
+  }, [boardsArray, search, sortBy, descending]);
+
+  // ================= HANDLERS =================
+
+  const handleOpenBoard = (boardId: string) => {
+    setIsBoardView(true);
+    dispatch(setActiveBoard(boardId));
+  };
+
+  // ================= RENDER =================
 
   return (
-    <div className="flex flex-1 flex-col overflow-x-auto scrollbar-stable bg-lp h-[100dvh] p-6">
-      <h1 className="text-2xl font-semibold mb-6">Selamat Datang</h1>
+    <div className="flex flex-1 flex-col border overflow-x-hidden scrollbar-stable bg-lp h-[100dvh] p-4">
+      <h1 className="mt-12 sm:mt-0 text-2xl font-semibold mb-6">
+        Selamat Datang
+      </h1>
 
       {/* ================= CARD ATAS ================= */}
-      <div className="flex gap-6 flex-wrap">
+      <div className="flex gap-3 flex-wrap">
         {visibleBoards.map((board) => {
-          const nimArray = Object.keys(board.members);
+          const memberIds = Object.keys(board.members);
 
-          const users: User[] = nimArray
+          const users: User[] = memberIds
             .map((nim) => userMap[nim])
             .filter((u): u is User => Boolean(u));
 
@@ -91,67 +124,61 @@ export default function Dashboard({
             const deadlineDate = new Date(board.deadline);
             const today = new Date();
             const diffTime = deadlineDate.getTime() - today.getTime();
+
             diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           }
 
           return (
-            <div
+            <BoardCard
               key={board.id}
-              className="relative w-[260px] rounded-xl p-5 bg-dp text-white"
-              onClick={() => {
-                setIsBoardView(true);
-                dispatch(setActiveBoard(board.id));
-              }}
-            >
-              <div className="absolute top-4 right-4 flex -space-x-2">
-                {visibleUsers.map((user) => (
-                  <Image
-                    key={user.nim_nip}
-                    src={user.avatar || "/images/default.png"}
-                    alt={user.name}
-                    width={30}
-                    height={30}
-                    className="w-8 h-8 rounded-full border-2 border-dp object-cover"
-                  />
-                ))}
-
-                {remainingCount > 0 && (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-black text-xs flex items-center justify-center border-2 border-dp">
-                    +{remainingCount}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-3 mt-8 mb-3">
-                <div className="bg-white/20 px-3 py-1 rounded-md text-sm">
-                  {totalTasks} Task
-                </div>
-
-                {diffDays !== null && (
-                  <div className="bg-white/20 px-3 py-1 rounded-md text-sm">
-                    {diffDays > 0 ? `${diffDays} Hari` : "Deadline lewat"}
-                  </div>
-                )}
-              </div>
-
-              <div className="text-lg font-semibold line-clamp-2">
-                {board.title}
-              </div>
-            </div>
+              boardId={board.id}
+              title={board.title}
+              totalTasks={totalTasks}
+              diffDays={diffDays}
+              visibleUsers={visibleUsers}
+              remainingCount={remainingCount}
+              onOpen={handleOpenBoard}
+            />
           );
         })}
-      </div>
-
-      {boardsArray.length > MAX_VISIBLE && (
-        <div className="mt-6">
-          <button
+        {boardsArray.length > MAX_VISIBLE && (
+          <div
             onClick={() => setShowAllProjects(!showAllProjects)}
-            className="px-6 py-2 bg-dp text-white rounded-lg hover:opacity-90 transition"
+            className="
+      relative rounded-lg
+      border-2 border-dp
+      bg-white text-dp
+      cursor-pointer
+      
+      flex flex-col items-center justify-center
+        w-34 h-34
+  md:w-40 md:h-40
+      
+      transition-all duration-200
+      hover:bg-dp hover:text-white hover:-translate-y-1 hover:shadow-xl
+      active:translate-y-0.5 active:shadow-md active:scale-[0.98]
+    "
           >
-            {showAllProjects ? "Tutup" : "Lihat Semua"}
-          </button>
-        </div>
-      )}
+            {!showAllProjects ? (
+              <>
+                <div className="text-2xl md:text-3xl font-bold">
+                  +{boardsArray.length - MAX_VISIBLE}
+                </div>
+                <div className="text-sm md:text-base font-medium mt-2">
+                  Lihat Semua
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="text-2xl md:text-3xl font-bold">−</div>
+                <div className="text-sm md:text-base font-medium mt-2">
+                  Tutup
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* ================= PROYEK DIAMATI ================= */}
       <div className="mt-12">
@@ -171,7 +198,7 @@ export default function Dashboard({
             placeholder="Cari Proyek"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-np px-4 py-3 rounded-lg outline-none"
+            className="flex-1 bg-white focus:border focus:border-np px-4 py-3 rounded-lg outline-none"
           />
 
           <button
@@ -238,7 +265,9 @@ export default function Dashboard({
                 <div className="mt-3 h-2 w-full bg-gray-200 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-dp transition-all duration-500"
-                    style={{ width: `${board.percent}%` }}
+                    style={{
+                      width: `${board.percent}%`,
+                    }}
                   />
                 </div>
               </div>

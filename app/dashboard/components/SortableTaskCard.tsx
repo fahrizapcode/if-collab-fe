@@ -1,21 +1,25 @@
+import { useMemo } from "react";
+import { useSelector } from "react-redux";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
 import PriorityDot from "./PriorityDot";
-import { ActiveComponent, Task } from "@/types/types";
-import { useMemo } from "react";
-import { makeSelectUsersByNims } from "@/store/boardsSelectors";
-import { useSelector } from "react-redux";
 import AvatarStack from "./AvatarStack";
+
+import { ActiveComponent, Task } from "@/types/types";
+import { makeSelectUsersByNims } from "@/store/boardsSelectors";
+
+interface Props {
+  task: Task;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+  setActiveTaskId: React.Dispatch<React.SetStateAction<string>>;
+}
 
 export default function SortableTaskCard({
   task,
   setIsActiveComponent,
   setActiveTaskId,
-}: {
-  task: Task;
-  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
-  setActiveTaskId: React.Dispatch<React.SetStateAction<string>>;
-}) {
+}: Props) {
   const {
     setNodeRef,
     attributes,
@@ -35,10 +39,12 @@ export default function SortableTaskCard({
     () => makeSelectUsersByNims(task.assignTo),
     [task.assignTo],
   );
+
   const users = useSelector(usersSelector);
 
   const handleClick = () => {
-    if (isDragging) return; // kalau sedang drag, jangan trigger click
+    if (isDragging) return;
+
     setIsActiveComponent("taskDetail");
     setActiveTaskId(task.id);
   };
@@ -51,19 +57,19 @@ export default function SortableTaskCard({
       {...listeners}
       onClick={handleClick}
       className="
-        p-2 sm:p-3
-        rounded
-        shadow
-        text-[0.7rem] sm:text-sm
-        cursor-grab active:cursor-grabbing
-        bg-white
-        transition-colors
-        touch-action-none
-      "
+      p-2 sm:p-2
+      rounded
+      shadow
+      text-[0.7rem] sm:text-[0.7rem]
+      cursor-grab active:cursor-grabbing
+      bg-white
+      transition-colors
+      touch-action-none
+    "
     >
-      <div className="flex gap-1 sm:gap-2 flex-col relative">
+      <div className="flex flex-col gap-1 sm:gap-1.5 relative">
         <div className="w-[80%]">
-          <div className="w-full line-clamp-2 text-[0.9rem] sm:text-lg font-medium">
+          <div className="w-full line-clamp-2 text-[0.9rem] sm:text-[0.95rem] font-medium">
             {task.title}
           </div>
           <PriorityDot priority={task.priority ?? "low"} />
@@ -71,18 +77,18 @@ export default function SortableTaskCard({
 
         <div className="flex justify-between items-end">
           {task.tags?.length ? (
-            <div className="flex flex-wrap gap-0.5 mt-1 sm:mt-2">
+            <div className="flex flex-wrap gap-0.5 mt-1 sm:mt-1.5">
               {task.tags.map((tag) => (
                 <span
                   key={tag}
                   className="
-                    px-1 sm:px-2
-                    py-[1px] sm:py-0.5
-                    rounded-sm
-                    text-[0.65rem] sm:text-sm
-                    font-medium
-                    bg-lp text-dp
-                  "
+                  px-1 sm:px-1.5
+                  py-[1px] sm:py-[1px]
+                  rounded-sm
+                  text-[0.65rem] sm:text-[0.7rem]
+                  font-medium
+                  bg-lp text-dp
+                "
                 >
                   {tag}
                 </span>
@@ -91,6 +97,7 @@ export default function SortableTaskCard({
           ) : (
             <div />
           )}
+
           <AvatarStack users={users} />
         </div>
       </div>

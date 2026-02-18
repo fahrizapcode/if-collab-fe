@@ -2,32 +2,59 @@
 
 import Image from "next/image";
 import { useSelector, useDispatch } from "react-redux";
+
 import { RootState } from "@/store/store";
-import { deleteNotification, User } from "@/store/userSlice";
+import { deleteNotification } from "@/store/userSlice";
+
 import { ActiveComponent } from "@/types/types";
+import { User } from "@/types/typesUser";
+
+interface NotificationProps {
+  isOpen: boolean;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+}
 
 export default function Notification({
   isOpen,
   setIsActiveComponent,
-}: {
-  isOpen: boolean;
-  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
-}) {
+}: NotificationProps) {
   const dispatch = useDispatch();
+
   const currentUser: User | null = useSelector(
     (state: RootState) => state.user.currentUser,
   );
 
   if (!currentUser) return null;
 
-  const handleAccept = (notifId: string) => {
-    // Untuk sekarang kita hanya hapus notif
+  const notifications = currentUser.notifications;
+
+  const handleDelete = (notifId: string) => {
     dispatch(deleteNotification({ notificationId: notifId }));
-    // Nanti bisa ditambahkan logic: tambah ke board
+  };
+
+  const handleAccept = (notifId: string) => {
+    handleDelete(notifId);
+    // Future: tambah logic join board di sini
   };
 
   const handleReject = (notifId: string) => {
-    dispatch(deleteNotification({ notificationId: notifId }));
+    handleDelete(notifId);
+  };
+
+  const renderFormattedContent = (content: string) => {
+    if (!content.includes("“")) return content;
+
+    const beforeQuote = content.split("“")[0];
+    const quotedPart = content.split("“")[1].split("”")[0];
+    const afterQuote = content.split("”")[1];
+
+    return (
+      <>
+        {beforeQuote}
+        <b>“{quotedPart}”</b>
+        {afterQuote}
+      </>
+    );
   };
 
   return (
@@ -39,22 +66,26 @@ export default function Notification({
       {/* Header */}
       <div className="flex justify-between items-center p-4 border-b">
         <h2 className="font-semibold text-lg">Notifikasi</h2>
+
         <div className="flex items-center gap-2">
           <span className="bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {currentUser.notifications.length}
+            {notifications.length}
           </span>
-          <button
+
+          <Image
             onClick={() => setIsActiveComponent(null)}
-            className="text-gray-500 hover:text-gray-700 font-bold"
-          >
-            X
-          </button>
+            className="text-gray-500 hover:text-gray-700 font-bold rotate-45 cursor-pointer"
+            alt="Close"
+            width={30}
+            height={30}
+            src={"/icons/add.svg"}
+          />
         </div>
       </div>
 
       {/* Notification List */}
       <div className="flex flex-col max-h-[60vh] overflow-y-auto">
-        {currentUser.notifications.map((notif) => {
+        {notifications.map((notif) => {
           const isInvitation = notif.content.startsWith("Kamu diundang");
 
           return (
@@ -63,7 +94,7 @@ export default function Notification({
               className="flex gap-3 p-4 border-b last:border-b-0"
             >
               <Image
-                src={currentUser.avatar}
+                src={currentUser.avatar || "/images/default.png"}
                 alt={currentUser.name}
                 width={40}
                 height={40}
@@ -72,16 +103,9 @@ export default function Notification({
 
               <div className="flex-1 flex flex-col">
                 <p className="text-sm">
-                  {notif.content.includes("“") ? (
-                    <>
-                      {notif.content.split("“")[0]}
-                      <b>“{notif.content.split("“")[1].split("”")[0]}”</b>
-                      {notif.content.split("”")[1]}
-                    </>
-                  ) : (
-                    notif.content
-                  )}
+                  {renderFormattedContent(notif.content)}
                 </p>
+
                 <span className="text-xs text-gray-400 mt-1">
                   {new Date(notif.created_at).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -91,7 +115,6 @@ export default function Notification({
                   <span className="italic">{notif.board_title}</span>
                 </span>
 
-                {/* Actions untuk invitation */}
                 {isInvitation && (
                   <div className="flex gap-2 mt-2">
                     <button
@@ -100,6 +123,7 @@ export default function Notification({
                     >
                       Terima
                     </button>
+
                     <button
                       className="border border-gray-300 px-3 py-1 rounded-md text-sm"
                       onClick={() => handleReject(notif.id)}
@@ -113,7 +137,7 @@ export default function Notification({
           );
         })}
 
-        {currentUser.notifications.length === 0 && (
+        {notifications.length === 0 && (
           <p className="text-center text-gray-400 p-4">Tidak ada notifikasi</p>
         )}
       </div>

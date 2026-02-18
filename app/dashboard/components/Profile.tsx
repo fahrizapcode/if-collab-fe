@@ -1,20 +1,24 @@
 "use client";
 
 import Image from "next/image";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store/store";
-import { ActiveComponent } from "@/types/types";
-import { X, LogOut, Pencil, Check } from "lucide-react";
 import { useState } from "react";
-import { updateProfile } from "@/store/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { X, LogOut, Pencil, Check } from "lucide-react";
+
+import { RootState } from "@/store/store";
+import { updateProfile } from "@/store/userSlice";
+import { ActiveComponent } from "@/types/types";
+
+interface ProfileProps {
+  isOpen: boolean;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+}
+
 export default function Profile({
   isOpen,
   setIsActiveComponent,
-}: {
-  isOpen: boolean;
-  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
-}) {
+}: ProfileProps) {
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -22,22 +26,56 @@ export default function Profile({
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [newName, setNewName] = useState(user?.name || "");
-  const [newPassword, setNewPassword] = useState("");
+
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   if (!user) return null;
+
+  const resetPasswordFields = () => {
+    setOldPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleClose = () => {
+    setIsActiveComponent(null);
+  };
+
+  const handleLogout = () => {
+    setIsActiveComponent(null);
+    router.push("/");
+  };
 
   const handleUpdateName = () => {
     dispatch(updateProfile({ name: newName }));
     setIsEditingName(false);
   };
 
-  const handleUpdatePassword = () => {
+  const handleSavePassword = () => {
+    if (oldPassword !== user.password) {
+      alert("Password lama salah!");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Konfirmasi password tidak cocok!");
+      return;
+    }
+
     if (!newPassword) return;
+
     dispatch(updateProfile({ password: newPassword }));
-    setNewPassword("");
+
+    setIsChangingPassword(false);
+    resetPasswordFields();
+  };
+
+  const handleCancelPasswordChange = () => {
+    setIsChangingPassword(false);
+    resetPasswordFields();
   };
 
   return (
@@ -49,10 +87,7 @@ export default function Profile({
       {/* HEADER */}
       <div className="flex items-center justify-between p-4 border-b">
         <h2 className="text-xl font-semibold">Profil</h2>
-        <X
-          className="cursor-pointer"
-          onClick={() => setIsActiveComponent(null)}
-        />
+        <X className="cursor-pointer" onClick={handleClose} />
       </div>
 
       <div className="p-4 space-y-5">
@@ -77,17 +112,15 @@ export default function Profile({
 
           <LogOut
             className="text-purple-800 cursor-pointer"
-            onClick={() => {
-              setIsActiveComponent(null);
-              router.push("/");
-            }}
+            onClick={handleLogout}
           />
         </div>
 
         {/* NAMA */}
         <div>
           <label className="block text-sm font-medium mb-2">Nama</label>
-          <div className="flex items-center border rounded-lg px-3 py-2">
+
+          <div className="flex items-center border rounded-lg px-3 py-2 border-gray-500">
             <input
               type="text"
               value={isEditingName ? newName : user.name}
@@ -111,94 +144,106 @@ export default function Profile({
         </div>
 
         {/* PASSWORD */}
-        {/* PASSWORD */}
         <div>
-          <label className="block text-sm font-medium mb-2">Password</label>
+          <label className="block text-sm font-medium mb-2 transition-all duration-300">
+            {isChangingPassword ? "Ganti Password" : "Password"}
+          </label>
 
-          {!isChangingPassword ? (
-            // ===============================
-            // DEFAULT MODE
-            // ===============================
-            <div className="flex items-center justify-between border rounded-lg px-3 py-2">
-              <span className="tracking-widest text-gray-600">********</span>
+          <div
+            className={`border border-gray-500 rounded-xl overflow-hidden bg-white transition-all duration-300 ${!isChangingPassword && "pt-3"}`}
+          >
+            {/* VIEW MODE */}
+            <div
+              className={`flex items-center justify-between px-4 pb-3 
+                transition-all duration-300 ease-in-out origin-top
+                ${
+                  isChangingPassword
+                    ? "opacity-0 scale-95 max-h-0 py-0 pointer-events-none"
+                    : "opacity-100 scale-100 max-h-20"
+                }`}
+            >
+              <span className="tracking-[0.4em] text-gray-500 text-sm">
+                • • • • • • • •
+              </span>
 
               <button
                 onClick={() => setIsChangingPassword(true)}
-                className="text-purple-700 text-sm font-medium hover:underline"
+                className="text-dp text-sm font-medium cursor-pointer
+                 hover:text-np 
+                 transition-colors duration-200"
               >
                 Ganti Password
               </button>
             </div>
-          ) : (
-            // ===============================
-            // EXPANDED MODE
-            // ===============================
-            <div className="space-y-3 border rounded-lg p-3">
-              <input
-                type="password"
-                placeholder="Password Lama"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              />
 
-              <input
-                type="password"
-                placeholder="Password Baru"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              />
+            {/* EDIT MODE */}
+            <div
+              className={`transition-all duration-300 ease-in-out origin-top
+                ${
+                  isChangingPassword
+                    ? "opacity-100 scale-100 max-h-[500px] py-4 px-4"
+                    : "opacity-0 scale-95 max-h-0 py-0 px-4 pointer-events-none"
+                }`}
+            >
+              <div className="space-y-3">
+                {/* INPUT FIELD */}
+                {[
+                  {
+                    placeholder: "Password Lama",
+                    value: oldPassword,
+                    setter: setOldPassword,
+                  },
+                  {
+                    placeholder: "Password Baru",
+                    value: newPassword,
+                    setter: setNewPassword,
+                  },
+                  {
+                    placeholder: "Konfirmasi Password Baru",
+                    value: confirmPassword,
+                    setter: setConfirmPassword,
+                  },
+                ].map((field, i) => (
+                  <input
+                    key={i}
+                    type="password"
+                    placeholder={field.placeholder}
+                    value={field.value}
+                    onChange={(e) => field.setter(e.target.value)}
+                    className="w-full border border-gray-500 
+                     rounded-lg px-3 py-2.5 text-sm
+                     focus:outline-none 
+                     focus:ring-2 focus:ring-lp
+                     focus:border-dp
+                     transition-all duration-200"
+                  />
+                ))}
 
-              <input
-                type="password"
-                placeholder="Konfirmasi Password Baru"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 text-sm"
-              />
+                {/* ACTION BUTTONS */}
+                <div className="flex justify-end gap-6 pt-2">
+                  <button
+                    onClick={handleCancelPasswordChange}
+                    className="text-sm text-gray-500 
+                     hover:text-gray-700
+                     transition-colors duration-200 cursor-pointer"
+                  >
+                    Batal
+                  </button>
 
-              <div className="flex justify-end gap-2">
-                <button
-                  onClick={() => {
-                    setIsChangingPassword(false);
-                    setOldPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                  className="text-sm text-gray-500 hover:underline"
-                >
-                  Batal
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (oldPassword !== user.password) {
-                      alert("Password lama salah!");
-                      return;
-                    }
-
-                    if (newPassword !== confirmPassword) {
-                      alert("Konfirmasi password tidak cocok!");
-                      return;
-                    }
-
-                    if (!newPassword) return;
-
-                    dispatch(updateProfile({ password: newPassword }));
-
-                    setIsChangingPassword(false);
-                    setOldPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                  className="bg-purple-700 text-white px-4 py-1 rounded-lg text-sm hover:bg-purple-800 transition"
-                >
-                  Simpan
-                </button>
+                  <button
+                    onClick={handleSavePassword}
+                    className="bg-np text-white px-6 py-2.5 
+                     rounded-lg text-sm font-medium
+                     hover:bg-dp 
+                     active:scale-95
+                     transition-all duration-200 cursor-pointer"
+                  >
+                    Simpan
+                  </button>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

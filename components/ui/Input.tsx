@@ -33,7 +33,7 @@ export default function Input({
       {label && (
         <label
           htmlFor={name}
-          className="text-md sm:text-xl font-medium text-gray-700 mb-1"
+          className="text-[1.1rem]  font-medium text-gray-700 mb-1"
         >
           {label}
         </label>
@@ -48,7 +48,7 @@ export default function Input({
         onChange={onChange}
         disabled={disabled}
         className={`
-          rounded-lg border h-12 sm:h-14 px-3 py-2 text-sm sm:text-lg
+          rounded-lg border h-12 px-3 py-2 text-sm sm:text-[1rem]
           outline-none transition
           ${error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-dp"}
           ${disabled ? "bg-gray-100 cursor-not-allowed" : "focus:ring-2"}

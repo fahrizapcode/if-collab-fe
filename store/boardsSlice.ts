@@ -1,14 +1,21 @@
 import { createSlice, nanoid, PayloadAction } from "@reduxjs/toolkit";
 import { initialBoards } from "@/data/data";
 import { BoardsState, Column, Role, Task } from "@/types/types";
-import { RootState } from "@reduxjs/toolkit/query";
-import { User } from "@/types/typesUser";
+
+// ==============================
+// INITIAL STATE
+// ==============================
+
+const initialState: BoardsState = initialBoards;
+
+// ==============================
+// PAYLOAD TYPES
+// ==============================
+
 type DeleteTaskPayload = {
   boardId: string;
   taskId: string;
 };
-
-const initialState: BoardsState = initialBoards;
 
 type MoveTaskPayload = {
   boardId: string;
@@ -18,6 +25,7 @@ type MoveTaskPayload = {
   toIndex?: number;
   actor?: string;
 };
+
 type AddProjectPayload = {
   title: string;
   statuses: string[];
@@ -31,87 +39,30 @@ type AddTaskPayload = {
   title: string;
   priority: "low" | "medium" | "high";
   description?: string;
-  assignTo?: string[]; // 0–3 orang
+  assignTo?: string[];
   createdBy: string;
   tags?: string[];
   deadline?: string;
 };
 
+// ==============================
+// SLICE
+// ==============================
+
 const boardsSlice = createSlice({
   name: "boards",
   initialState,
   reducers: {
-    // 🔁 pindah board aktif
+    // ==========================
+    // BOARD
+    // ==========================
+
     setActiveBoard(state, action: PayloadAction<string>) {
       state.activeBoardId = action.payload;
     },
-    deleteBoard: (state, action: PayloadAction<string>) => {
+
+    deleteBoard(state, action: PayloadAction<string>) {
       delete state.boards[action.payload];
-    },
-
-    // 🧲 pindah task
-    moveTask(state, action: PayloadAction<MoveTaskPayload>) {
-      const { boardId, taskId, fromColumnId, toColumnId, toIndex, actor } =
-        action.payload;
-
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      // replace columns untuk reactivity
-      const fromColumn = { ...board.columns[fromColumnId] };
-      const toColumn = { ...board.columns[toColumnId] };
-
-      // hapus dari asal
-      fromColumn.taskIds = fromColumn.taskIds.filter((id) => id !== taskId);
-
-      // insert ke tujuan
-      if (toIndex !== undefined) {
-        toColumn.taskIds = [
-          ...toColumn.taskIds.slice(0, toIndex),
-          taskId,
-          ...toColumn.taskIds.slice(toIndex),
-        ];
-      } else {
-        toColumn.taskIds = [...toColumn.taskIds, taskId];
-      }
-
-      // replace columns di board
-      board.columns = {
-        ...board.columns,
-        [fromColumnId]: fromColumn,
-        [toColumnId]: toColumn,
-      };
-
-      // tambahkan log
-      board.activityLogs = [
-        {
-          id: nanoid(),
-          actorId: actor ?? "You",
-          taskId,
-          fromColumnId,
-          toColumnId,
-          createdAt: new Date().toISOString(),
-        },
-        ...board.activityLogs,
-      ];
-    },
-
-    updateTask(
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        taskId: string;
-        updates: Partial<Task>;
-      }>,
-    ) {
-      const { boardId, taskId, updates } = action.payload;
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      board.tasks[taskId] = {
-        ...board.tasks[taskId],
-        ...updates,
-      };
     },
 
     addProject(state, action: PayloadAction<AddProjectPayload>) {
@@ -124,32 +75,150 @@ const boardsSlice = createSlice({
 
       statuses.forEach((status, index) => {
         const columnId = `col-${index}-${nanoid(4)}`;
+
         columns[columnId] = {
           id: columnId,
           title: status,
           taskIds: [],
         };
+
         columnOrder.push(columnId);
       });
 
       state.boards[boardId] = {
         id: boardId,
         title,
-        tasks: {},
+        description: "",
         members: {},
+        tasks: {},
         columns,
         columnOrder,
         activityLogs: [],
         deadline,
-        description: "",
         createdAt: new Date().toLocaleDateString(),
         createdBy,
         last_active: new Date().toLocaleDateString(),
       };
 
-      // langsung set aktif ke project baru
       state.activeBoardId = boardId;
     },
+
+    updateBoardMeta(
+      state,
+      action: PayloadAction<{
+        boardId: string;
+        deadline?: string;
+        description?: string;
+      }>,
+    ) {
+      const { boardId, description, deadline } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      if (description !== undefined) {
+        board.description = description;
+      }
+
+      if (deadline !== undefined) {
+        board.deadline = deadline;
+      }
+    },
+
+    // ==========================
+    // COLUMN
+    // ==========================
+
+    addColumn(
+      state,
+      action: PayloadAction<{ boardId: string; title: string }>,
+    ) {
+      const { boardId, title } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      const id = nanoid();
+
+      board.columns[id] = {
+        id,
+        title,
+        taskIds: [],
+      };
+
+      board.columnOrder.push(id);
+    },
+
+    updateColumn(
+      state,
+      action: PayloadAction<{
+        boardId: string;
+        columnId: string;
+        title: string;
+      }>,
+    ) {
+      const { boardId, columnId, title } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      board.columns[columnId].title = title;
+    },
+
+    deleteColumn(
+      state,
+      action: PayloadAction<{
+        boardId: string;
+        columnId: string;
+      }>,
+    ) {
+      const { boardId, columnId } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      if (board.columnOrder.length <= 3) {
+        console.warn("Minimal harus ada 3 status");
+        return;
+      }
+
+      const column = board.columns[columnId];
+      const firstColumnId = board.columnOrder[0];
+
+      if (column.taskIds.length > 0 && firstColumnId !== columnId) {
+        board.columns[firstColumnId].taskIds.push(...column.taskIds);
+      }
+
+      delete board.columns[columnId];
+      board.columnOrder = board.columnOrder.filter((id) => id !== columnId);
+    },
+
+    reorderColumn(
+      state,
+      action: PayloadAction<{
+        boardId: string;
+        sourceIndex: number;
+        destinationIndex: number;
+      }>,
+    ) {
+      const { boardId, sourceIndex, destinationIndex } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      if (
+        sourceIndex === destinationIndex ||
+        sourceIndex < 0 ||
+        destinationIndex < 0 ||
+        sourceIndex >= board.columnOrder.length ||
+        destinationIndex >= board.columnOrder.length
+      ) {
+        return;
+      }
+
+      const [moved] = board.columnOrder.splice(sourceIndex, 1);
+      board.columnOrder.splice(destinationIndex, 0, moved);
+    },
+
+    // ==========================
+    // TASK
+    // ==========================
+
     addTask(state, action: PayloadAction<AddTaskPayload>) {
       const {
         boardId,
@@ -171,7 +240,6 @@ const boardsSlice = createSlice({
 
       const taskId = `task-${nanoid(6)}`;
 
-      // 📝 buat task baru
       board.tasks[taskId] = {
         id: taskId,
         title,
@@ -184,10 +252,8 @@ const boardsSlice = createSlice({
         createdAt: new Date().toISOString(),
       };
 
-      // ➕ masukkan ke kolom
       column.taskIds.push(taskId);
 
-      // 📜 activity log
       board.activityLogs.unshift({
         id: nanoid(),
         actorId: createdBy ?? "You",
@@ -197,6 +263,109 @@ const boardsSlice = createSlice({
         createdAt: new Date().toISOString(),
       });
     },
+
+    updateTask(
+      state,
+      action: PayloadAction<{
+        boardId: string;
+        taskId: string;
+        updates: Partial<Task>;
+      }>,
+    ) {
+      const { boardId, taskId, updates } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      board.tasks[taskId] = {
+        ...board.tasks[taskId],
+        ...updates,
+      };
+    },
+
+    deleteTask(state, action: PayloadAction<DeleteTaskPayload>) {
+      const { boardId, taskId } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      const column = Object.values(board.columns).find((col) =>
+        col.taskIds.includes(taskId),
+      );
+
+      if (!column) return;
+
+      column.taskIds = column.taskIds.filter((id) => id !== taskId);
+      delete board.tasks[taskId];
+
+      board.activityLogs.unshift({
+        id: nanoid(),
+        actorId: "You",
+        taskId,
+        fromColumnId: column.id,
+        toColumnId: column.id,
+        createdAt: new Date().toISOString(),
+      });
+    },
+
+    moveTask(state, action: PayloadAction<MoveTaskPayload>) {
+      const { boardId, taskId, fromColumnId, toColumnId, toIndex, actor } =
+        action.payload;
+
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      const fromColumn = { ...board.columns[fromColumnId] };
+      const toColumn = { ...board.columns[toColumnId] };
+
+      fromColumn.taskIds = fromColumn.taskIds.filter((id) => id !== taskId);
+
+      if (toIndex !== undefined) {
+        toColumn.taskIds = [
+          ...toColumn.taskIds.slice(0, toIndex),
+          taskId,
+          ...toColumn.taskIds.slice(toIndex),
+        ];
+      } else {
+        toColumn.taskIds = [...toColumn.taskIds, taskId];
+      }
+
+      board.columns = {
+        ...board.columns,
+        [fromColumnId]: fromColumn,
+        [toColumnId]: toColumn,
+      };
+
+      board.activityLogs = [
+        {
+          id: nanoid(),
+          actorId: actor ?? "You",
+          taskId,
+          fromColumnId,
+          toColumnId,
+          createdAt: new Date().toISOString(),
+        },
+        ...board.activityLogs,
+      ];
+    },
+
+    // ==========================
+    // MEMBER
+    // ==========================
+
+    addMember(
+      state,
+      action: PayloadAction<{
+        boardId: string;
+        memberId: string;
+        role: Role;
+      }>,
+    ) {
+      const { boardId, memberId, role } = action.payload;
+      const board = state.boards[boardId];
+      if (!board) return;
+
+      board.members[memberId] = { role };
+    },
+
     updateMemberRole(
       state,
       action: PayloadAction<{
@@ -228,189 +397,18 @@ const boardsSlice = createSlice({
       const member = board.members[memberId];
       if (!member) return;
 
-      // 🔥 Hitung jumlah leader
       const totalLeaders = Object.values(board.members).filter(
         (m) => m.role === "leader",
       ).length;
 
-      // ❌ Jika dia leader dan cuma satu → batal hapus
       if (member.role === "leader" && totalLeaders <= 1) {
         return;
       }
 
       delete board.members[memberId];
 
-      // Bersihkan assignTo
       Object.values(board.tasks).forEach((task) => {
-        task.assignTo = task.assignTo?.filter((id) => id !== memberId);
-      });
-    },
-
-    addMember(
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        memberId: string;
-        role: Role;
-      }>,
-    ) {
-      const { boardId, memberId, role } = action.payload;
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      board.members[memberId] = { role };
-    },
-    addColumn: (
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        title: string;
-      }>,
-    ) => {
-      const { boardId, title } = action.payload;
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      const id = nanoid();
-
-      const newColumn: Column = {
-        id,
-        title,
-        taskIds: [],
-      };
-
-      board.columns[id] = newColumn;
-      board.columnOrder.push(id);
-    },
-    updateBoardMeta: (
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        deadline?: string;
-        description?: string;
-      }>,
-    ) => {
-      const { boardId, description, deadline } = action.payload;
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      if (description !== undefined) {
-        board.description = description;
-      }
-
-      if (deadline !== undefined) {
-        board.deadline = deadline;
-      }
-    },
-
-    // ✅ UPDATE COLUMN TITLE
-    updateColumn: (
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        columnId: string;
-        title: string;
-      }>,
-    ) => {
-      const { boardId, columnId, title } = action.payload;
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      board.columns[columnId].title = title;
-    },
-
-    // ✅ DELETE COLUMN
-    deleteColumn: (
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        columnId: string;
-      }>,
-    ) => {
-      const { boardId, columnId } = action.payload;
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      // 🚫 Tidak boleh hapus kalau status <= 3
-      if (board.columnOrder.length <= 3) {
-        console.warn("Minimal harus ada 3 status");
-        return;
-      }
-
-      const column = board.columns[columnId];
-      const firstColumnId = board.columnOrder[0];
-
-      // Pindahkan task ke column pertama
-      if (column.taskIds.length > 0 && firstColumnId !== columnId) {
-        board.columns[firstColumnId].taskIds.push(...column.taskIds);
-      }
-
-      delete board.columns[columnId];
-
-      board.columnOrder = board.columnOrder.filter((id) => id !== columnId);
-    },
-    reorderColumn: (
-      state,
-      action: PayloadAction<{
-        boardId: string;
-        sourceIndex: number;
-        destinationIndex: number;
-      }>,
-    ) => {
-      const { boardId, sourceIndex, destinationIndex } = action.payload;
-      const board = state.boards[boardId];
-
-      console.log("=== REORDER START ===");
-      console.log("Before:", board.columnOrder);
-      console.log("Source Index:", sourceIndex);
-      console.log("Destination Index:", destinationIndex);
-      if (!board) return;
-
-      if (
-        sourceIndex === destinationIndex ||
-        sourceIndex < 0 ||
-        destinationIndex < 0 ||
-        sourceIndex >= board.columnOrder.length ||
-        destinationIndex >= board.columnOrder.length
-      ) {
-        console.log("Invalid reorder request");
-        return;
-      }
-
-      const [moved] = board.columnOrder.splice(sourceIndex, 1);
-      board.columnOrder.splice(destinationIndex, 0, moved);
-
-      console.log("Moved Column:", moved);
-      console.log("After:", board.columnOrder);
-      console.log("=== REORDER END ===");
-    },
-    deleteTask(state, action: PayloadAction<DeleteTaskPayload>) {
-      const { boardId, taskId } = action.payload;
-
-      const board = state.boards[boardId];
-      if (!board) return;
-
-      // 1️⃣ Cari column yang punya task ini
-      const column = Object.values(board.columns).find((col) =>
-        col.taskIds.includes(taskId),
-      );
-
-      if (!column) return;
-
-      // 2️⃣ Hapus dari column.taskIds
-      column.taskIds = column.taskIds.filter((id) => id !== taskId);
-
-      // 3️⃣ Hapus dari tasks object
-      delete board.tasks[taskId];
-
-      // 4️⃣ Optional: tambah activity log
-      board.activityLogs.unshift({
-        id: nanoid(),
-        actorId: "You",
-        taskId,
-        fromColumnId: column.id,
-        toColumnId: column.id,
-        createdAt: new Date().toISOString(),
+        task.assignTo = task.assignTo.filter((id) => id !== memberId);
       });
     },
   },
@@ -418,20 +416,20 @@ const boardsSlice = createSlice({
 
 export const {
   setActiveBoard,
-  moveTask,
+  deleteBoard,
   addProject,
-  addTask,
-  updateMemberRole,
-  removeMember,
-  addMember,
+  updateBoardMeta,
   addColumn,
   updateColumn,
   deleteColumn,
   reorderColumn,
-  updateBoardMeta,
+  addTask,
   updateTask,
   deleteTask,
-  deleteBoard,
+  moveTask,
+  addMember,
+  updateMemberRole,
+  removeMember,
 } = boardsSlice.actions;
 
 export default boardsSlice.reducer;

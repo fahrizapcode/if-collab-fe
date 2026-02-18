@@ -38,20 +38,20 @@ export default function TagInput({
 
   return (
     <div ref={ref} className="relative">
-      <label className="block  sm:text-[1.15rem] font-medium">Tag</label>
+      <label className="block sm:text-[0.9rem] font-medium">Tag</label>
 
       {/* Selected tags */}
       <div className="flex flex-wrap gap-2 mb-2">
         {selectedTags.map((tag) => (
           <span
             key={tag}
-            className="flex items-center gap-1 px-4 bg-yellow-100 py-1 rounded-full bg-lp text-dp text-md text-yellow-700"
+            className="flex items-center gap-1 px-4 bg-yellow-100 py-1 sm:py-[2px] rounded-full bg-lp text-dp text-md sm:text-[0.9rem] text-yellow-700"
           >
             {tag}
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className=" text-xl "
+              className="text-xl sm:text-base leading-none"
             >
               ×
             </button>
@@ -68,32 +68,39 @@ export default function TagInput({
         }}
         onFocus={() => setOpen(true)}
         placeholder={placeholder}
-        className="w-full border rounded text-[1rem] sm:text-[1.15rem] p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        className="w-full border rounded text-[1rem] sm:text-[0.9rem] p-3 sm:py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
       />
 
       {/* Dropdown */}
-      {open && (
+      {open && query.trim() !== "" && (
         <div
           className="
-      absolute z-20 mt-1 w-full 
-      rounded-md border border-gray-200 bg-white 
-      shadow-lg
-      max-h-56 overflow-auto
-    "
+          absolute z-20 mt-1 w-full 
+          rounded-md border border-gray-200 bg-white 
+          shadow-lg
+          max-h-56 overflow-auto
+        "
         >
           <button
             type="button"
-            onClick={() => addTag(query)}
-            className="
-          w-full flex items-center gap-2
-          px-3 py-2.5 text-md text-purple-600 font-medium
-          hover:bg-purple-50 transition-colors
-          border-b border-gray-100
-        "
+            onClick={() => addTag(query.trim())}
+            disabled={query.trim() === ""}
+            className={`
+            w-full flex items-center gap-2
+            px-3 py-2.5 sm:py-2 text-md sm:text-[0.9rem]
+            font-medium border-b border-gray-100
+            transition-colors
+            ${
+              query.trim() === ""
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-purple-600 hover:bg-purple-50"
+            }
+          `}
           >
-            <span className="text-lg">➕</span>
+            <span className="text-lg sm:text-base">➕</span>
             <span>
-              Buat tag <strong className="font-semibold ">“{query}”</strong>
+              Buat tag{" "}
+              <strong className="font-semibold">“{query.trim()}”</strong>
             </span>
           </button>
         </div>

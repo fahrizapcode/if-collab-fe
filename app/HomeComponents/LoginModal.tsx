@@ -20,11 +20,11 @@ export default function LoginModal({ isModalOpen, setIsModalOpen }: Props) {
 
       {/* Modal Content */}
       <div
-        className={`h-150 w-[100%] sm:w-160 rounded-xl bg-white
+        className={`h-150 w-[100%] sm:w-130 rounded-xl bg-white
         transition-transform duration-300 ease-in-out absolute 
         ${
           isModalOpen
-            ? "translate-y-44 md:translate-y-26"
+            ? "translate-y-40 md:translate-y-10"
             : "translate-y-[110vh]"
         }
       `}

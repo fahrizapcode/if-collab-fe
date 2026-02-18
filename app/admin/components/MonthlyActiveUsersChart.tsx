@@ -21,7 +21,7 @@ export default function MonthlyActiveUsersChart({ data }: Props) {
   const maxValue = Math.max(...data);
 
   return (
-    <div className="bg-gray-100 p-5 rounded-xl">
+    <div className="bg-white p-5 rounded-xl shadow-sm">
       <h2 className="text-xl font-bold text-purple-800 mb-5">
         Total User Aktif (1 bulan)
       </h2>

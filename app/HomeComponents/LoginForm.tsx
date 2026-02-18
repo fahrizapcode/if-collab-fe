@@ -23,7 +23,7 @@ export default function LoginForm({
   return (
     <form
       onSubmit={handleLogin}
-      className="w-[92%] flex flex-col justify-between mt-6"
+      className="w-[92%] flex flex-col justify-between mt-6  border-black"
     >
       <div className="flex flex-col gap-y-3 py-12">
         <Input
@@ -48,7 +48,7 @@ export default function LoginForm({
 
       <Button
         type="submit"
-        className="text-[1.05rem] sm:text-[1.3rem] py-3 h-13 sm:h-16"
+        className="text-[1.05rem] sm:text-[1.2rem] py-3 h-13 sm:h-14"
       >
         Masuk
       </Button>

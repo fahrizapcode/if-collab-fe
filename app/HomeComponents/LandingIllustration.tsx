@@ -9,7 +9,7 @@ export default function LandingIllustration() {
       alt="landing-illustration"
       width={560}
       height={80}
-      className="sm:w-[80%] md:w-[430px] xl:w-[560px]"
+      className="sm:w-[60%] md:w-[400px] xl:w-[500px]"
     />
   );
 }

@@ -1,25 +1,36 @@
 "use client";
 
+import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import { RootState } from "@/store/store";
 import { ActiveComponent, Task } from "@/types/types";
 import { PublicUser } from "@/types/typesUser";
-import { useMemo } from "react";
+
 import AssigneeMultiSelect from "./AssigneeMultiSelect";
 import TagInput from "./TagInput";
+
 import { deleteTask, moveTask, updateTask } from "@/store/boardsSlice";
 import { makeSelectUsersByNims } from "@/store/boardsSelectors";
+
+import Image from "next/image";
+
+interface Props {
+  isOpen: boolean;
+  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+  activeTaskId: string;
+}
 
 export default function TaskDetail({
   isOpen,
   setIsActiveComponent,
   activeTaskId,
-}: {
-  isOpen: boolean;
-  setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
-  activeTaskId: string;
-}) {
+}: Props) {
   const dispatch = useDispatch();
+
+  // ==============================
+  // BOARD STATE
+  // ==============================
 
   const activeBoardId = useSelector(
     (state: RootState) => state.boards.activeBoardId,
@@ -34,6 +45,12 @@ export default function TaskDetail({
   const members = board?.members ?? {};
   const tasks = board?.tasks ?? {};
 
+  const task: Task | undefined = tasks[activeTaskId];
+
+  // ==============================
+  // DELETE
+  // ==============================
+
   const handleDelete = () => {
     if (!activeBoardId || !task) return;
 
@@ -47,13 +64,15 @@ export default function TaskDetail({
     setIsActiveComponent(null);
   };
 
+  // ==============================
+  // DATE FORMAT
+  // ==============================
+
   const formatForInput = (date?: string) => {
     if (!date) return "";
     const d = new Date(date);
     return d.toISOString().slice(0, 16);
   };
-
-  const task: Task | undefined = tasks[activeTaskId];
 
   // ==============================
   // USERS SELECTOR
@@ -133,19 +152,28 @@ export default function TaskDetail({
 
   return (
     <div
-      className={`absolute inset-y-0 right-0 h-[100dvh] w-[100vw] md:w-190 
-      bg-white border-l border-black/30 z-30 
-      transition-transform duration-300 ease-in-out
-      ${isOpen ? "translate-x-0 fixed" : "translate-x-full"}`}
+      className={`
+        absolute inset-y-0 right-0 h-[100dvh] w-[100vw] md:w-160
+        bg-white border-l border-black/30 z-30
+        transition-transform duration-300 ease-in-out
+        ${isOpen ? "translate-x-0 fixed" : "translate-x-full"}
+      `}
     >
       <div className="flex flex-col h-full px-6 py-8 overflow-y-auto gap-6">
         {/* HEADER */}
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold">Detail Tugas</h2>
-          <button onClick={() => setIsActiveComponent(null)}>✕</button>
+          <Image
+            src={"/icons/add.svg"}
+            alt="Close"
+            width={40}
+            height={40}
+            className="rotate-45 cursor-pointer"
+            onClick={() => setIsActiveComponent(null)}
+          />
         </div>
 
-        {/* ================== JUDUL ================== */}
+        {/* JUDUL */}
         <div>
           <label className="font-medium">Judul</label>
           <input
@@ -155,7 +183,7 @@ export default function TaskDetail({
           />
         </div>
 
-        {/* ================== PRIORITAS ================== */}
+        {/* PRIORITAS */}
         <div>
           <label className="font-medium">Prioritas</label>
           <div className="flex gap-2 mt-2">
@@ -176,7 +204,7 @@ export default function TaskDetail({
           </div>
         </div>
 
-        {/* ================== PENANGGUNG JAWAB ================== */}
+        {/* PENANGGUNG JAWAB */}
         <div>
           <AssigneeMultiSelect
             users={allUsers}
@@ -190,13 +218,13 @@ export default function TaskDetail({
           />
         </div>
 
-        {/* ================== TAG ================== */}
+        {/* TAG */}
         <TagInput
           selectedTags={task.tags ?? []}
           onChange={(tags) => updateField("tags", tags)}
         />
 
-        {/* ================== DEADLINE ================== */}
+        {/* DEADLINE */}
         <div>
           <label className="font-medium">Tenggat Waktu</label>
           <input
@@ -214,7 +242,7 @@ export default function TaskDetail({
           />
         </div>
 
-        {/* ================== STATUS ================== */}
+        {/* STATUS */}
         <div>
           <label className="font-medium">Status</label>
           <div className="flex flex-col gap-2 mt-2">
@@ -234,7 +262,8 @@ export default function TaskDetail({
             ))}
           </div>
         </div>
-        {/* ================== DELETE ================== */}
+
+        {/* DELETE */}
         <div className="pt-6 border-t">
           <button
             type="button"
