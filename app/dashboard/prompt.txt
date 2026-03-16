@@ -1,0 +1,55 @@
+Rapihkan kode berikut agar:
+
+Lebih mudah dibaca (readable)
+
+Lebih terstruktur dan modular jika memang diperlukan
+
+Konsisten dalam penamaan variabel, formatting, dan struktur
+
+Mengurangi duplikasi kode jika memungkinkan
+
+Meningkatkan efisiensi seperlunya
+
+⚠️ PERINGATAN KERAS:
+
+DILARANG mengubah layout sedikit pun
+
+DILARANG mengubah behavior / logic / fungsi
+
+DILARANG mengubah struktur data
+
+DILARANG mengubah flow state management
+
+DILARANG mengubah props contract
+
+DILARANG mengubah styling result (className tidak boleh berubah hasil render-nya)
+
+Jika ingin:
+
+Memecah menjadi komponen → pastikan hasil render 100% identik
+
+Membuat helper function → pastikan tidak mengubah logic
+
+Menggabungkan logic → pastikan tidak mempengaruhi side effect
+
+Mengoptimasi → pertimbangkan potensi error terlebih dahulu dan jelaskan alasannya
+
+Jika ada bagian yang:
+
+Berisiko error jika dimodularisasi
+
+Berisiko mengubah behavior
+
+Bergantung pada closure / reference tertentu
+
+⚠️ WAJIB beri penjelasan sebelum mengubahnya.
+
+Output yang diharapkan:
+
+Versi kode yang sudah dirapihkan
+
+Penjelasan singkat perubahan yang dilakukan
+
+Catatan jika ada bagian yang sengaja tidak diubah karena berisiko
+
+Berikut kodenya:
