@@ -13,6 +13,8 @@ interface ToastProps {
 }
 
 export default function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
+  const [isExiting, setIsExiting] = useState(false);
+
   const handleClose = React.useCallback(() => {
     setIsExiting(true);
     setTimeout(onClose, 300); // Wait for transition
