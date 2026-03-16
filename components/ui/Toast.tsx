@@ -13,7 +13,10 @@ interface ToastProps {
 }
 
 export default function Toast({ message, type, onClose, duration = 3000 }: ToastProps) {
-  const [isExiting, setIsExiting] = useState(false);
+  const handleClose = React.useCallback(() => {
+    setIsExiting(true);
+    setTimeout(onClose, 300); // Wait for transition
+  }, [onClose]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -21,12 +24,7 @@ export default function Toast({ message, type, onClose, duration = 3000 }: Toast
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration]);
-
-  const handleClose = () => {
-    setIsExiting(true);
-    setTimeout(onClose, 300); // Wait for transition
-  };
+  }, [duration, handleClose]);
 
   const icons = {
     success: <CheckCircle className="w-5 h-5 text-green-500" />,
