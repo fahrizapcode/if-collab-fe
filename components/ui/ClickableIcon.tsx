@@ -13,7 +13,7 @@ export default function ClickableIcon({
   size = 40,
   alt = "icon",
   onClick,
-  className = "",
+  className,
 }: ClickableIconProps) {
   return (
     <button
