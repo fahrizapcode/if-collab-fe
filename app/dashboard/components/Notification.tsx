@@ -8,11 +8,11 @@ import { RootState } from "@/store/store";
 import { deleteNotification } from "@/store/userSlice";
 
 import { ActiveComponent } from "@/types/types";
-import { User } from "@/types/typesUser";
-import { usersService } from "@/lib/services/users.service";
+import { notificationsService } from "@/lib/services/notifications.service";
 import { invitationsService } from "@/lib/services/invitations.service";
 import { boardsService } from "@/lib/services/boards.service";
 import { setBoards } from "@/store/boardsSlice";
+import { apiBoardsToReduxShape } from "@/lib/utils/normalization";
 
 interface NotificationProps {
   isOpen: boolean;
@@ -34,30 +34,38 @@ export default function Notification({
   const notifications = currentUser?.notifications ?? [];
 
   const handleAccept = async (notifId: string, invitationId?: string) => {
-    if (invitationId) {
-      try {
+    try {
+      if (invitationId) {
         await invitationsService.respond(invitationId, 'accepted');
         // Re-fetch boards to show the new project immediately
-        const updatedBoards = await boardsService.getAll();
-        dispatch(setBoards(updatedBoards));
+        const apiBoards = await boardsService.getAll();
+        const shaped = apiBoardsToReduxShape(apiBoards);
+        dispatch(setBoards(shaped));
         
-        // Optional: show a success message or redirect
-      } catch (err) {
-        console.error("Failed to accept invitation", err);
+        // Trigger hard refresh as requested to ensure everything is synced
+        window.location.reload();
       }
+
+      // Sync backend: always delete notification after it was handled
+      await notificationsService.delete(notifId);
+      dispatch(deleteNotification({ notificationId: notifId }));
+    } catch (err) {
+      console.error("Failed to accept invitation", err);
     }
-    dispatch(deleteNotification({ notificationId: notifId }));
   };
 
   const handleReject = async (notifId: string, invitationId?: string) => {
-    if (invitationId) {
-      try {
+    try {
+      if (invitationId) {
         await invitationsService.respond(invitationId, 'rejected');
-      } catch (err) {
-        console.error("Failed to reject invitation", err);
       }
+
+      // Sync backend
+      await notificationsService.delete(notifId);
+      dispatch(deleteNotification({ notificationId: notifId }));
+    } catch (err) {
+      console.error("Failed to reject invitation", err);
     }
-    dispatch(deleteNotification({ notificationId: notifId }));
   };
 
   const renderFormattedContent = (content: string) => {
@@ -79,7 +87,7 @@ export default function Notification({
   return (
     <div
       className={`${isOpen ? "block" : "hidden"
-        } absolute top-[8vh] right-6 w-[90%] max-w-[400px] bg-white border border-gray-300 z-30 rounded-md shadow-md`}
+        } fixed top-[8vh] right-6 w-[90%] max-w-[400px] bg-white border border-gray-300 z-[80] rounded-md shadow-md`}
     >
       {/* Header */}
       <div className="flex justify-between items-center p-4 border-b">

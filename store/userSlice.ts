@@ -97,6 +97,10 @@ const userSlice = createSlice({
       );
       if (notif) notif.read = true;
     },
+    markAllNotificationsRead(state) {
+      if (!state.currentUser) return;
+      state.currentUser.notifications.forEach((n) => (n.read = true));
+    },
   },
 });
 
@@ -113,6 +117,7 @@ export const {
   deleteNotification,
   clearNotifications,
   markNotificationRead,
+  markAllNotificationsRead,
 } = userSlice.actions;
 
 export default userSlice.reducer;

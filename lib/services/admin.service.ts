@@ -28,5 +28,20 @@ export const adminService = {
     async deleteBoard(id: string) {
         const res = await api.delete(`/api/admin/boards/${id}`);
         return res.data;
+    },
+
+    async createUser(payload: { name: string; nim_nip: string; password?: string }) {
+        const res = await api.post('/api/admin/users', payload);
+        return res.data.data;
+    },
+
+    async updateUser(id: string, payload: { name?: string; password?: string }) {
+        const res = await api.patch(`/api/admin/users/${id}`, payload);
+        return res.data.data;
+    },
+
+    async deleteUser(id: string) {
+        const res = await api.delete(`/api/admin/users/${id}`);
+        return res.data;
     }
 };

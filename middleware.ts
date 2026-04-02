@@ -8,9 +8,14 @@ export function middleware(req: NextRequest) {
     const isProtected = protectedRoutes.some((route) => pathname.startsWith(route));
 
     if (isProtected && !token) {
+        console.log(`[Middleware] Redirecting to / from ${pathname} (No token found)`);
         const url = req.nextUrl.clone();
         url.pathname = '/';
         return NextResponse.redirect(url);
+    }
+
+    if (token) {
+        console.log(`[Middleware] Token found for ${pathname}`);
     }
 
     return NextResponse.next();

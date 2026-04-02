@@ -165,6 +165,37 @@ export default function ProjectDetail({
     const getActiveMainTab = (tab: TabType) =>
         tab === "tambah-kontributor" ? "kontributor" : tab;
 
+    const handleRoleChange = (memberId: string, newRole: Role) => {
+        if (!activeBoard || !authUser) return;
+
+        const currentRole = activeBoard.members.find(m => m.userId === memberId)?.role;
+
+        // 1. If self-downgrading from leader
+        if (memberId === authUser.id && currentRole === 'leader' && newRole !== 'leader') {
+            const otherLeaders = activeBoard.members.filter(m => m.userId !== authUser.id && m.role === 'leader');
+            if (otherLeaders.length === 0) {
+                showToast("Pilih ketua baru terlebih dahulu sebelum melepaskan peran Anda.", "info");
+                return;
+            }
+        }
+
+        // 2. If assigning someone else as leader (auto-demote self if currently leader)
+        if (newRole === 'leader' && memberId !== authUser.id && isLeader) {
+            dispatch(updateMemberRole({
+                boardId: activeBoard.id,
+                memberId: authUser.id,
+                role: 'observer'
+            }));
+            showToast(`Role dialihkan. Anda sekarang adalah Pengamat.`, "success");
+        }
+
+        dispatch(updateMemberRole({
+            boardId: activeBoard.id,
+            memberId,
+            role: newRole
+        }));
+    };
+
     return (
         <div
             className={`
@@ -179,7 +210,7 @@ export default function ProjectDetail({
         px-4 sm:px-6
         py-6 sm:py-8
         bg-white
-        z-22
+        z-50
         right-0
         transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0 fixed" : "translate-x-full"}
@@ -632,15 +663,7 @@ export default function ProjectDetail({
                                                 <select
                                                     value={role}
                                                     disabled={!canManageMembers || (isManager && role === 'leader')}
-                                                    onChange={(e) =>
-                                                        dispatch(
-                                                            updateMemberRole({
-                                                                boardId: activeBoard.id,
-                                                                memberId: user.id,
-                                                                role: e.target.value as Role,
-                                                            }),
-                                                        )
-                                                    }
+                                                    onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
                                                     className="
                     w-36
                     bg-gray-50
@@ -659,7 +682,7 @@ export default function ProjectDetail({
                                                     <option value="observer">Pengamat</option>
                                                 </select>
 
-                                                {canManageMembers && !(isManager && role === 'leader') && (
+                                                {canManageMembers && (role as string) !== 'leader' && (
                                                     <button
                                                         onClick={() =>
                                                             dispatch(
@@ -724,15 +747,7 @@ export default function ProjectDetail({
                                             <select
                                                 value={role}
                                                 disabled={!canManageMembers || (isManager && role === 'leader')}
-                                                onChange={(e) =>
-                                                    dispatch(
-                                                        updateMemberRole({
-                                                            boardId: activeBoard.id,
-                                                            memberId: user.id,
-                                                            role: e.target.value as Role,
-                                                        }),
-                                                    )
-                                                }
+                                                onChange={(e) => handleRoleChange(user.id, e.target.value as Role)}
                                                 className="
                   flex-1
                   bg-gray-50
@@ -751,7 +766,7 @@ export default function ProjectDetail({
                                                 <option value="observer">Pengamat</option>
                                             </select>
 
-                                            {canManageMembers && !(isManager && role === 'leader') && (
+                                            {canManageMembers && (role as string) !== 'leader' && (
                                                 <button
                                                     onClick={() =>
                                                         dispatch(

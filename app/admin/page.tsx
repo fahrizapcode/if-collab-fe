@@ -125,16 +125,31 @@ export default function AdminDashboard() {
     setShowUserForm(false);
   };
 
-  const handleSubmitUser = () => {
-    if (!newName || !newNim || !newPassword) return;
+  const handleSubmitUser = async () => {
+    if (!newName || !newNim) return;
+    if (!isEditing && !newPassword) return;
 
-    if (isEditing) {
-      console.log("Update user API call here");
-    } else {
-      console.log("Add user API call here");
+    try {
+      if (isEditing) {
+        await adminService.updateUser(editingNim, {
+          name: newName,
+          password: newPassword || undefined,
+        });
+        showToast("User berhasil diperbarui", "success");
+      } else {
+        await adminService.createUser({
+          name: newName,
+          nim_nip: newNim,
+          password: newPassword,
+        });
+        showToast("User berhasil ditambahkan", "success");
+      }
+      fetchData();
+      resetForm();
+    } catch (err) {
+      console.error("Failed to submit user", err);
+      showToast("Gagal memproses user", "error");
     }
-
-    resetForm();
   };
 
   const handleEditUser = (user: PublicUser) => {
@@ -372,10 +387,16 @@ export default function AdminDashboard() {
                               message: `Apakah Anda yakin ingin menghapus user "${user.name}"?`,
                               confirmLabel: "Ya, Hapus",
                               type: "danger",
-                              onConfirm: () => {
-                                console.log("Remove user API call for", user.id);
-                                showToast(`User ${user.name} berhasil dihapus (simulasi)`, "success");
-                              }
+                        onConfirm: async () => {
+                          try {
+                            await adminService.deleteUser(user.id);
+                            showToast(`User ${user.name} berhasil dihapus`, "success");
+                            fetchData();
+                          } catch (err) {
+                            console.error("Failed to delete user", err);
+                            showToast("Gagal menghapus user", "error");
+                          }
+                        }
                             });
                           }}
                           className="bg-red-500 px-3 py-2 rounded-md text-white text-xs"

@@ -99,8 +99,8 @@ export default function Dashboard({ boards, setIsBoardView }: DashboardProps) {
   // ================= RENDER =================
 
   return (
-    <div className="flex flex-1 flex-col border overflow-x-hidden scrollbar-stable bg-lp h-[100dvh] p-4">
-      <h1 className="mt-12 sm:mt-0 text-2xl font-semibold mb-6">
+    <div className="flex flex-1 flex-col border overflow-x-hidden scrollbar-stable bg-lp h-[100dvh] pt-18 sm:pt-20 px-4 sm:px-8 pb-5">
+      <h1 className="text-2xl font-semibold mb-6">
         Selamat Datang
       </h1>
 

@@ -13,12 +13,14 @@ interface Props {
   task: Task;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
   setActiveTaskId: React.Dispatch<React.SetStateAction<string>>;
+  canMoveTask: boolean;
 }
 
 export default function SortableTaskCard({
   task,
   setIsActiveComponent,
   setActiveTaskId,
+  canMoveTask,
 }: Props) {
   const {
     setNodeRef,
@@ -27,7 +29,10 @@ export default function SortableTaskCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id });
+  } = useSortable({ 
+    id: task.id,
+    disabled: !canMoveTask
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -59,16 +64,16 @@ export default function SortableTaskCard({
       {...attributes}
       {...listeners}
       onClick={handleClick}
-      className="
+      className={`
       p-2 sm:p-2
       rounded
       shadow
       text-[0.7rem] sm:text-[0.7rem]
-      cursor-grab active:cursor-grabbing
       bg-white
       transition-colors
       touch-action-none
-    "
+      ${canMoveTask ? "cursor-grab active:cursor-grabbing" : "cursor-default"}
+    `}
     >
       <div className="flex flex-col gap-1 sm:gap-1.5 relative">
         <div className="w-[80%]">

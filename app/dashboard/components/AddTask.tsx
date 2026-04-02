@@ -148,12 +148,13 @@ function TaskForm({
       onSubmit={handleSubmit}
       className={`h-[88dvh] sm:h-[80dvh] 
   px-5 pt-6 sm:pt-4 pb-10
-  w-full sm:w-140 
-  rounded-xl bg-white z-30 
+  w-[95%] sm:w-140 
+  rounded-xl bg-white z-[90] 
   flex flex-col gap-y-2 sm:gap-y-2 
   overflow-y-auto justify-between
-  transition-transform duration-300 ease-in-out absolute 
-  ${isOpen ? "translate-y-28 md:translate-y-16 fixed" : "translate-y-[110vh]"}
+  transition-transform duration-300 ease-in-out fixed
+  left-1/2 -translate-x-1/2
+  ${isOpen ? "translate-y-16 md:translate-y-10" : "translate-y-[110vh]"}
 `}
     >
       {/* Header */}
