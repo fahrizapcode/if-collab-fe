@@ -166,7 +166,7 @@ export default function Profile({
   return (
     <div
       className={`${isOpen ? "block" : "hidden"
-        } absolute top-[10vh] right-6 w-[90%] max-w-[400px] bg-white border border-gray-300 z-50 rounded-md shadow-2xl scale-up-center`}
+        } fixed top-[10vh] right-6 w-[90%] max-w-[400px] bg-white border border-gray-300 z-[80] rounded-md shadow-2xl scale-up-center`}
     >
       {/* HEADER */}
       <div className="flex items-center justify-between p-4 border-b">

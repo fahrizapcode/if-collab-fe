@@ -60,7 +60,7 @@ export default function Aside({
         border border-lightgry
         rounded-3xl
         ${!isBoardView && "hidden"}
-        z-20
+        z-50 lg:z-30
         lg:border-none
         transition-transform duration-300 ease-in-out
         ${

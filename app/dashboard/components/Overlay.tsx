@@ -18,8 +18,8 @@ export default function Overlay({
 
   return (
     <div
-      className={`z-10 fixed inset-0 flex items-center justify-center absolute bg-black/30 lg:hidden ${
-        isActiveOverlay ? "" : "hidden"
+      className={`fixed inset-0 bg-black/50 transition-opacity duration-300 z-40 ${
+        isActiveOverlay ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       onClick={handleCloseOverlay}
     />

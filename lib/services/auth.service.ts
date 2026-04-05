@@ -8,14 +8,14 @@ export const authService = {
     async login(payload: LoginPayload) {
         const res = await api.post('/api/auth/login', payload);
         const { token, user } = res.data.data;
-        Cookies.set('token', token, { expires: 7, sameSite: 'lax' });
+        Cookies.set('token', token, { expires: 7, sameSite: 'lax', path: '/' });
         return user;
     },
 
     async register(payload: RegisterPayload) {
         const res = await api.post('/api/auth/register', payload);
         const { token, user } = res.data.data;
-        Cookies.set('token', token, { expires: 7, sameSite: 'lax' });
+        Cookies.set('token', token, { expires: 7, sameSite: 'lax', path: '/' });
         return user;
     },
 
@@ -25,6 +25,9 @@ export const authService = {
     },
 
     logout() {
-        Cookies.remove('token');
+        Cookies.remove('token', { path: '/' });
+        import('../socket').then(({ disconnectSocket }) => {
+            disconnectSocket();
+        });
     },
 };

@@ -33,7 +33,7 @@ export default function Sidebar({
         px-2
         py-6 sm:py-8
         bg-white
-        z-20
+        ${isOpen ? "z-50" : "z-30"}
         transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}

@@ -8,13 +8,16 @@ import { RootState } from "@/store/store";
 import { deleteNotification } from "@/store/userSlice";
 
 import { ActiveComponent } from "@/types/types";
-import { User } from "@/types/typesUser";
-import { usersService } from "@/lib/services/users.service";
+import { notificationsService } from "@/lib/services/notifications.service";
 import { invitationsService } from "@/lib/services/invitations.service";
 import { notificationsService } from "@/lib/services/notifications.service";
 import { boardsService } from "@/lib/services/boards.service";
 import { setBoards } from "@/store/boardsSlice";
+<<<<<<< HEAD
 import { setNotifications, markNotificationRead } from "@/store/userSlice";
+=======
+import { apiBoardsToReduxShape } from "@/lib/utils/normalization";
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
 
 interface NotificationProps {
   isOpen: boolean;
@@ -38,8 +41,8 @@ export default function Notification({
   const notifications = currentUser?.notifications ?? [];
 
   const handleAccept = async (notifId: string, invitationId?: string) => {
-    if (invitationId) {
-      try {
+    try {
+      if (invitationId) {
         await invitationsService.respond(invitationId, 'accepted');
         
         // Refresh notifications to show the updated text immediately
@@ -47,6 +50,7 @@ export default function Notification({
         dispatch(setNotifications(updatedNotifs));
 
         // Re-fetch boards to show the new project immediately
+<<<<<<< HEAD
         const updatedBoards = await boardsService.getAll();
         dispatch(setBoards(updatedBoards));
 
@@ -55,14 +59,29 @@ export default function Notification({
         const msg = err.response?.data?.message || "Gagal menerima undangan";
         showToast(msg, "error");
         console.error("Failed to accept invitation", err);
+=======
+        const apiBoards = await boardsService.getAll();
+        const shaped = apiBoardsToReduxShape(apiBoards);
+        dispatch(setBoards(shaped));
+        
+        // Trigger hard refresh as requested to ensure everything is synced
+        window.location.reload();
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
       }
+
+      // Sync backend: always delete notification after it was handled
+      await notificationsService.delete(notifId);
+      dispatch(deleteNotification({ notificationId: notifId }));
+    } catch (err) {
+      console.error("Failed to accept invitation", err);
     }
   };
 
   const handleReject = async (notifId: string, invitationId?: string) => {
-    if (invitationId) {
-      try {
+    try {
+      if (invitationId) {
         await invitationsService.respond(invitationId, 'rejected');
+<<<<<<< HEAD
 
         // Refresh notifications
         const updatedNotifs = await notificationsService.getAll();
@@ -73,7 +92,15 @@ export default function Notification({
         const msg = err.response?.data?.message || "Gagal menolak undangan";
         showToast(msg, "error");
         console.error("Failed to reject invitation", err);
+=======
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
       }
+
+      // Sync backend
+      await notificationsService.delete(notifId);
+      dispatch(deleteNotification({ notificationId: notifId }));
+    } catch (err) {
+      console.error("Failed to reject invitation", err);
     }
   };
 
@@ -96,7 +123,11 @@ export default function Notification({
   return (
     <div
       className={`${isOpen ? "block" : "hidden"
+<<<<<<< HEAD
         } absolute top-[8vh] right-6 w-[95vw] max-w-[420px] bg-white border border-gray-100 z-50 rounded-xl shadow-2xl overflow-hidden`}
+=======
+        } fixed top-[8vh] right-6 w-[90%] max-w-[400px] bg-white border border-gray-300 z-[80] rounded-md shadow-md`}
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
     >
       {/* Header */}
       <div className="flex justify-between items-center px-5 py-4 border-b border-gray-50 bg-gray-50/50">

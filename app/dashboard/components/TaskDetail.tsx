@@ -179,7 +179,7 @@ export default function TaskDetail({
     <div
       className={`
         absolute inset-y-0 right-0 h-[100dvh] w-[100vw] md:w-160
-        bg-white border-l border-black/30 z-30
+        bg-white border-l border-black/30 z-50
         transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0 fixed" : "translate-x-full"}
       `}

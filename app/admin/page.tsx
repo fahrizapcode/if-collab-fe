@@ -126,6 +126,7 @@ export default function AdminDashboard() {
   };
 
   const handleSubmitUser = async () => {
+<<<<<<< HEAD
     if (!newName || !newNim) {
       showToast("Nama dan NIM/NIP harus diisi", "error");
       return;
@@ -156,6 +157,32 @@ export default function AdminDashboard() {
     } catch (error: any) {
       showToast(error.response?.data?.message || "Gagal menyimpan user", "error");
     }
+=======
+    if (!newName || !newNim) return;
+    if (!isEditing && !newPassword) return;
+
+    try {
+      if (isEditing) {
+        await adminService.updateUser(editingNim, {
+          name: newName,
+          password: newPassword || undefined,
+        });
+        showToast("User berhasil diperbarui", "success");
+      } else {
+        await adminService.createUser({
+          name: newName,
+          nim_nip: newNim,
+          password: newPassword,
+        });
+        showToast("User berhasil ditambahkan", "success");
+      }
+      fetchData();
+      resetForm();
+    } catch (err) {
+      console.error("Failed to submit user", err);
+      showToast("Gagal memproses user", "error");
+    }
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
   };
 
   const handleEditUser = (user: any) => {
@@ -393,6 +420,7 @@ export default function AdminDashboard() {
                               message: `Apakah Anda yakin ingin menghapus user "${user.name}"?`,
                               confirmLabel: "Ya, Hapus",
                               type: "danger",
+<<<<<<< HEAD
                               onConfirm: async () => {
                                 try {
                                   await adminService.deleteUser(user.id);
@@ -402,6 +430,18 @@ export default function AdminDashboard() {
                                   showToast(error.response?.data?.message || "Gagal menghapus user", "error");
                                 }
                               }
+=======
+                        onConfirm: async () => {
+                          try {
+                            await adminService.deleteUser(user.id);
+                            showToast(`User ${user.name} berhasil dihapus`, "success");
+                            fetchData();
+                          } catch (err) {
+                            console.error("Failed to delete user", err);
+                            showToast("Gagal menghapus user", "error");
+                          }
+                        }
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
                             });
                           }}
                           className="bg-red-500 px-3 py-2 rounded-md text-white text-xs"

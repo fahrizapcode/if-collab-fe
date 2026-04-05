@@ -11,7 +11,11 @@ import { authService } from "@/lib/services/auth.service";
 import { usersService } from "@/lib/services/users.service";
 import { setUser } from "@/store/userSlice";
 import { setUsers } from "@/store/usersSlice";
+<<<<<<< HEAD
 import { getSocket } from "@/lib/socket";
+=======
+import { apiBoardsToReduxShape } from "@/lib/utils/normalization";
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
 
 import ClickableIcon from "@/components/ui/ClickableIcon";
 
@@ -35,86 +39,7 @@ const Board = dynamic(() => import("./components/Board"), {
 // HELPER: normalize API board list into redux shape
 // ==============================
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function apiBoardsToReduxShape(apiBoards: any[]): Record<string, BoardData> {
-  const map: Record<string, BoardData> = {};
-  for (const b of apiBoards) {
-    // If backend already sends standard shape, we can use it or transform slightly
-    // Map tasks to Redux-friendly shape (assignees as IDs)
-    const tasks: BoardData["tasks"] = {};
-    const apiTasks = typeof b.tasks === 'object' && !Array.isArray(b.tasks) ? b.tasks : {};
-    
-    // If b.tasks is array (legacy), normalize. If object (new), map through values
-    const taskList = Array.isArray(b.tasks) ? b.tasks : Object.values(b.tasks);
-    
-    for (const t of taskList as any[]) {
-      tasks[t.id] = {
-        id: t.id,
-        title: t.title,
-        description: t.description ?? "",
-        priority: t.priority,
-        tags: t.tags ?? [],
-        deadline: t.deadline ?? null,
-        columnId: t.columnId,
-        createdBy: t.createdBy,
-        createdAt: t.createdAt,
-        assignees: t.assignees?.map((a: { id: string }) => typeof a === 'string' ? a : a.id) ?? [],
-      };
-    }
-
-    // Map columns - Use b.columns (standardized object) or normalize array
-    const columns: BoardData["columns"] = {};
-    if (typeof b.columns === 'object' && !Array.isArray(b.columns)) {
-      // It's already an object { [id]: { id, title, order, taskIds } }
-      // We just need to ensure the shape matches Column type
-      for (const id in b.columns) {
-        columns[id] = {
-          id: b.columns[id].id,
-          title: b.columns[id].title,
-          taskIds: b.columns[id].taskIds || [],
-        };
-      }
-    } else if (Array.isArray(b.columns)) {
-      for (const col of b.columns) {
-        columns[col.id] = {
-          id: col.id,
-          title: col.title,
-          taskIds: b.tasks
-            .filter((t: { columnId: string }) => t.columnId === col.id)
-            .map((t: { id: string }) => t.id),
-        };
-      }
-    }
-
-    // Determine columnOrder
-    let columnOrder = b.columnOrder;
-    if (!columnOrder && Array.isArray(b.columns)) {
-      columnOrder = [...b.columns]
-        .sort((a, c) => a.order - c.order)
-        .map(c => c.id);
-    } else if (!columnOrder) {
-      columnOrder = Object.values(columns).map(c => c.id);
-    }
-
-    map[b.id] = {
-      id: b.id,
-      title: b.title,
-      description: b.description ?? "",
-      deadline: b.deadline ?? null,
-      createdAt: b.createdAt,
-      lastActive: b.lastActive,
-      createdBy: b.createdBy,
-      columnOrder,
-      columns,
-      tasks,
-      members: b.members?.map((m: { userId: string; role: string }) => ({
-        userId: m.userId,
-        role: m.role,
-      })) ?? [],
-      activityLogs: b.activityLogs ?? [],
-    };
-  }
-  return map;
-}
+// Helper removed. Using apiBoardsToReduxShape from normalization utils.
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
@@ -159,17 +84,22 @@ export default function DashboardPage() {
       // Set first board as active if none selected
       const firstId = Object.keys(shaped)[0];
       if (firstId) dispatch(setActiveBoardId(firstId));
+    }).catch(err => {
+      console.error("Failed to fetch boards", err);
     });
 
     // 2. Hydrate User if missing
     authService.me().then((userData) => {
       dispatch(setUser(userData));
-    }).catch(() => {
+    }).catch((err) => {
+      console.error("Failed to hydrate user", err);
       // If error (unauthorized), Login middleware should handle redirect
     });
     // 3. Fetch all users for name lookups
     usersService.search().then((allUsers) => {
       dispatch(setUsers(allUsers));
+    }).catch(err => {
+      console.error("Failed to search users", err);
     });
 
     // 4. Global Socket Listeners (Notifications)
@@ -190,6 +120,7 @@ export default function DashboardPage() {
     };
   }, [dispatch]);
 
+<<<<<<< HEAD
   // Handle Socket User Room Join
   const currentUser = useAppSelector(state => state.user.currentUser);
   useEffect(() => {
@@ -198,6 +129,16 @@ export default function DashboardPage() {
        socket.emit('join:user', currentUser.id);
     }
   }, [currentUser?.id]);
+=======
+  // Auto-sync overlay based on active component
+  useEffect(() => {
+    if (isActiveComponent) {
+      setIsActiveOverlay(true);
+    } else {
+      setIsActiveOverlay(false);
+    }
+  }, [isActiveComponent]);
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
 
 
 
@@ -212,21 +153,6 @@ export default function DashboardPage() {
         setIsBoardView={setIsBoardView}
         isBoardView={isBoardView}
       />
-
-      {/* PROJECT DETAIL */}
-      <ProjectDetail
-        isOpen={isActiveComponent === "projectDetail"}
-        activeBoard={activeBoard}
-        setIsActiveComponent={setIsActiveComponent}
-      />
-
-      {/* TASK DETAIL */}
-      <TaskDetail
-        isOpen={isActiveComponent === "taskDetail"}
-        setIsActiveComponent={setIsActiveComponent}
-        activeTaskId={activeTaskId}
-      />
-
       {/* MAIN CONTENT */}
       {isBoardView ? (
         <Board
@@ -244,6 +170,20 @@ export default function DashboardPage() {
 
       {/* RIGHT ASIDE */}
       <Aside isOpen={isActiveComponent === "stats"} isBoardView={isBoardView} />
+
+      {/* PROJECT DETAIL */}
+      <ProjectDetail
+        isOpen={isActiveComponent === "projectDetail"}
+        activeBoard={activeBoard}
+        setIsActiveComponent={setIsActiveComponent}
+      />
+
+      {/* TASK DETAIL */}
+      <TaskDetail
+        isOpen={isActiveComponent === "taskDetail"}
+        setIsActiveComponent={setIsActiveComponent}
+        activeTaskId={activeTaskId}
+      />
 
       {/* TOP NAV */}
       <Nav

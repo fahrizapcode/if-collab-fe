@@ -72,7 +72,7 @@ export default function Board({
     return board.members.find(m => m.userId === authUser.id)?.role;
   }, [authUser, board]);
 
-  const canMoveTask = userRole && userRole !== 'observer';
+  const canMoveTask = !!(userRole && userRole !== 'observer');
   const canAddTask = userRole === 'leader' || userRole === 'manager';
 
 
@@ -341,6 +341,12 @@ export default function Board({
           {board.title}
         </h1>
 
+        {userRole === 'observer' && (
+          <span className="bg-amber-100 text-amber-700 text-[0.65rem] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ml-1">
+            Pengamat
+          </span>
+        )}
+
         <ClickableIcon
           srcIcon="/icons/tool-white.svg"
           className="active:opacity-20 cursor-pointer"
@@ -390,7 +396,11 @@ export default function Board({
                             task={board.tasks[taskId]}
                             setIsActiveComponent={setIsActiveComponent}
                             setActiveTaskId={setActiveTaskId}
+<<<<<<< HEAD
                             canMoveTask={!!canMoveTask}
+=======
+                            canMoveTask={canMoveTask}
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
                           />
                         ))}
                       </div>
@@ -407,7 +417,11 @@ export default function Board({
                 task={activeTask}
                 setIsActiveComponent={setIsActiveComponent}
                 setActiveTaskId={setActiveTaskId}
+<<<<<<< HEAD
                 canMoveTask={!!canMoveTask}
+=======
+                canMoveTask={canMoveTask}
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
               />
             )}
           </DragOverlay>

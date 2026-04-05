@@ -30,6 +30,7 @@ export const adminService = {
         return res.data;
     },
 
+<<<<<<< HEAD
     async createUser(data: { name: string, nim_nip: string, password: string }) {
         const res = await api.post('/api/admin/users', data);
         return res.data.data;
@@ -37,6 +38,15 @@ export const adminService = {
 
     async updateUser(id: string, data: { name?: string, nim_nip?: string, password?: string }) {
         const res = await api.patch(`/api/admin/users/${id}`, data);
+=======
+    async createUser(payload: { name: string; nim_nip: string; password?: string }) {
+        const res = await api.post('/api/admin/users', payload);
+        return res.data.data;
+    },
+
+    async updateUser(id: string, payload: { name?: string; password?: string }) {
+        const res = await api.patch(`/api/admin/users/${id}`, payload);
+>>>>>>> 45f411fa2bbcfa97574ce57dc25d859447db69a3
         return res.data.data;
     },
 

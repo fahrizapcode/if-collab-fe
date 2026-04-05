@@ -118,13 +118,13 @@ export default function AddProject({
     <form
       onSubmit={handleSubmit}
       className={`
-    h-[75dvh] h-[85vh]
-    w-full sm:w-160
+    h-[75dvh] sm:h-[85vh]
+    w-[95%] sm:w-160
     rounded-xl bg-white
     transition-transform duration-300 ease-in-out
-    absolute z-31 p-6
+    fixed left-1/2 -translate-x-1/2 z-[90] p-6
     flex flex-col
-    ${isOpen ? "translate-y-28 md:translate-y-18 fixed" : "translate-y-[110vh]"}
+    ${isOpen ? "translate-y-20 md:translate-y-10" : "translate-y-[110vh]"}
   `}
     >
       <h2 className="text-2xl sm:text-2xl items-center font-semibold mb-4 flex justify-between">
