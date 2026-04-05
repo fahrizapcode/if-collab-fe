@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "@/store/hooks";
 
@@ -101,10 +101,21 @@ export default function TaskDetail({
 
   const allUsers = useSelector(usersSelector);
 
+  const [localTitle, setLocalTitle] = useState("");
+  const [description, setDescription] = useState("");
+
   const selectedUsers: PublicUser[] = useMemo(() => {
     if (!task) return [];
-    return allUsers.filter((u) => task.assignees.includes(u.id));
+    return allUsers.filter((u) => task?.assignees.includes(u.id));
   }, [allUsers, task]);
+
+  // Sync local states
+  useEffect(() => {
+    if (task) {
+      setLocalTitle(task.title);
+      setDescription(task.description || "");
+    }
+  }, [task?.id, task?.title, task?.description]);
 
   // ==============================
   // CURRENT COLUMN
@@ -191,9 +202,28 @@ export default function TaskDetail({
         <div>
           <label className="font-medium">Judul</label>
           <input
-            value={task.title}
-            onChange={(e) => updateField("title", e.target.value)}
+            value={localTitle}
+            onChange={(e) => setLocalTitle(e.target.value)}
+            onBlur={() => {
+              if (localTitle.trim() && localTitle !== task.title) {
+                updateField("title", localTitle.trim());
+              } else {
+                setLocalTitle(task.title);
+              }
+            }}
             className="w-full border rounded p-3 mt-1 bg-white disabled:bg-gray-50 disabled:text-gray-700"
+            disabled={!canEditTask}
+          />
+        </div>
+        
+        {/* DESKRIPSI */}
+        <div>
+          <label className="font-medium">Deskripsi</label>
+          <textarea
+            value={task.description || ""}
+            onChange={(e) => updateField("description", e.target.value)}
+            className="w-full border rounded p-3 mt-1 bg-white disabled:bg-gray-50 disabled:text-gray-700 min-h-[100px]"
+            placeholder="Tambahkan deskripsi tugas..."
             disabled={!canEditTask}
           />
         </div>
@@ -227,7 +257,7 @@ export default function TaskDetail({
             disabled={!canEditTask}
             onChange={(users) =>
               updateField(
-                "assignees",
+                "assigneeIds" as any,
                 users.map((u) => u.id),
               )
             }

@@ -13,11 +13,13 @@ import Input from "@/components/ui/Input";
 import ButtonIcon from "@/components/ui/ButtonIcon";
 
 import { ActiveComponent } from "@/types/types";
+import { useUI } from "@/components/providers/UIProvider";
 
 type AddProjectProps = {
   isOpen: boolean;
   setIsActiveOverlay: React.Dispatch<React.SetStateAction<boolean>>;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
+  setIsBoardView: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const DEFAULT_STATUSES = ["Belum dimulai", "Belum dimulai", "Belum dimulai"];
@@ -26,12 +28,17 @@ export default function AddProject({
   isOpen,
   setIsActiveComponent,
   setIsActiveOverlay,
+  setIsBoardView
 }: AddProjectProps) {
   const dispatch = useAppDispatch();
+  const { showToast } = useUI();
   const user = useSelector((state: RootState) => state.user.currentUser);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [statuses, setStatuses] = useState<string[]>(DEFAULT_STATUSES);
+  const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
 
   if (!user) return null;
@@ -41,12 +48,19 @@ export default function AddProject({
   // ===============================
 
   const handleAddStatus = () => {
+    if (statuses.length >= 10) {
+      showToast("Maksimal 10 status telah tercapai", "error");
+      return;
+    }
     setStatuses((prev) => [...prev, "Status baru"]);
   };
 
   const handleRemoveStatus = (index: number) => {
     setStatuses((prev) => {
-      if (prev.length <= 1) return prev;
+      if (prev.length <= 1) {
+          showToast("Minimal harus ada 1 status", "error");
+          return prev;
+      }
       return prev.filter((_, i) => i !== index);
     });
   };
@@ -63,25 +77,37 @@ export default function AddProject({
     setTitle("");
     setStatuses(DEFAULT_STATUSES);
     setDeadline("");
+    setDescription("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) return;
+    if (!title.trim() || isLoading) return;
 
-    dispatch(
-      addProject({
-        title,
-        statuses,
-        deadline: deadline || undefined,
-        createdBy: user.nim_nip,
-      }),
-    );
+    setIsLoading(true);
+    try {
+      const result = await dispatch(
+        addProject({
+          title,
+          statuses,
+          deadline: deadline || undefined,
+          description: description || undefined,
+          createdBy: user.nim_nip,
+        }),
+      ).unwrap();
 
-    resetForm();
-    setIsActiveOverlay(false);
-    setIsActiveComponent(null);
+      showToast(`Proyek "${result.title}" berhasil dibuat`, "success");
+      resetForm();
+      setIsActiveOverlay(false);
+      setIsActiveComponent(null);
+      setIsBoardView(true);
+    } catch (err: any) {
+      console.error("Gagal membuat proyek:", err);
+      showToast(err.message || "Gagal membuat proyek. Pastikan data benar.", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // ===============================
@@ -179,6 +205,17 @@ export default function AddProject({
           </ButtonIcon>
         </div>
 
+        {/* Deskripsi Proyek */}
+        <div className="mb-4">
+          <label className="text-[1rem] font-medium">Deskripsi Proyek (Opsional)</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Masukkan deskripsi proyek"
+            className="w-full border border-gray-300 rounded-lg p-2.5 mt-1 focus:ring-2 focus:ring-purple-500 focus:outline-none min-h-[100px]"
+          />
+        </div>
+
         {/* Deadline */}
         <div className="mb-4">
           <Input
@@ -197,9 +234,9 @@ export default function AddProject({
         <Button
           type="submit"
           className="text-[1rem] sm:text-[1.1rem] py-4 w-full"
-          disabled={!title.trim()}
+          disabled={!title.trim() || isLoading}
         >
-          Buat Proyek
+          {isLoading ? "Memproses..." : "Buat Proyek"}
         </Button>
       </div>
     </form>

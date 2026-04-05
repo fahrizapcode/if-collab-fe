@@ -19,22 +19,17 @@ export default function UserAvatar({
     size = 40,
     className = "",
 }: UserAvatarProps) {
-    const initialSrc = hasAvatar
+    const src = hasAvatar
         ? usersService.getAvatarUrl(userId)
         : "/images/default.png";
 
-    const [src, setSrc] = useState(initialSrc);
-
-    // Update src if userId or hasAvatar changes
-    useEffect(() => {
-        setSrc(hasAvatar ? usersService.getAvatarUrl(userId) : "/images/default.png");
-    }, [userId, hasAvatar]);
+    const [error, setError] = useState(false);
 
     const handleError = () => {
-        if (src !== "/images/default.png") {
-            setSrc("/images/default.png");
-        }
+        setError(true);
     };
+
+    const finalSrc = error ? "/images/default.png" : src;
 
     return (
         <div
@@ -42,7 +37,7 @@ export default function UserAvatar({
             style={{ width: size, height: size }}
         >
             <Image
-                src={src}
+                src={finalSrc}
                 alt={userName}
                 fill
                 sizes={`${size}px`}

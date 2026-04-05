@@ -35,6 +35,7 @@ type AddProjectPayload = {
   title: string;
   statuses: string[];
   deadline?: string;
+  description?: string;
   createdBy: string;
 };
 
@@ -71,7 +72,14 @@ export const addTask = createAsyncThunk(
 export const updateTask = createAsyncThunk(
   "boards/updateTask",
   async ({ boardId, taskId, updates }: { boardId: string; taskId: string; updates: Partial<Task> & { assigneeIds?: string[] } }) => {
-    const response = await boardsService.updateTask(boardId, taskId, updates);
+    // Robustness: Map assignees to assigneeIds if it is present
+    const { assignees, ...rest } = updates as any;
+    const finalUpdates = { ...rest };
+    if (assignees !== undefined) {
+      finalUpdates.assigneeIds = assignees;
+    }
+    
+    const response = await boardsService.updateTask(boardId, taskId, finalUpdates);
     return response; // { task, log }
   }
 );
@@ -141,6 +149,14 @@ export const removeMember = createAsyncThunk(
     const response = await boardsService.removeMember(boardId, memberId);
     return { boardId, memberId, log: response.log };
   }
+);
+
+export const updateBoard = createAsyncThunk(
+    "boards/updateBoard",
+    async ({ boardId, updates }: { boardId: string; updates: Partial<BoardData> }) => {
+        const response = await boardsService.update(boardId, updates as any);
+        return { boardId, updates, log: response.log }; // response might contain log for activity
+    }
 );
 
 
@@ -214,7 +230,12 @@ const boardsSlice = createSlice({
       const { boardId, task, log } = action.payload;
       const board = state.boards[boardId];
       if (board) {
-        board.tasks[task.id] = task;
+        // Safety mapping: ensure assignees are strictly string IDs
+        const serializedTask = {
+          ...task,
+          assignees: (task.assignees ?? []).map((a: any) => (typeof a === "string" ? a : a.id)),
+        };
+        board.tasks[task.id] = serializedTask;
         const column = board.columns[task.columnId];
         if (column && !column.taskIds.includes(task.id)) {
           column.taskIds.push(task.id);
@@ -228,7 +249,12 @@ const boardsSlice = createSlice({
       const { boardId, task, log } = action.payload;
       const board = state.boards[boardId];
       if (board) {
-        board.tasks[task.id] = task;
+        // Safety mapping: ensure assignees are strictly string IDs
+        const serializedTask = {
+          ...task,
+          assignees: (task.assignees ?? []).map((a: any) => (typeof a === "string" ? a : a.id)),
+        };
+        board.tasks[task.id] = serializedTask;
         if (!board.activityLogs.find(l => l.id === log.id)) {
           board.activityLogs.unshift(log);
         }
@@ -310,6 +336,13 @@ const boardsSlice = createSlice({
         if (!board.activityLogs.find(l => l.id === log.id)) {
           board.activityLogs.unshift(log);
         }
+      }
+    },
+    socketColumnUpdated(state, action: PayloadAction<{ boardId: string; columnId: string; title: string }>) {
+      const { boardId, columnId, title } = action.payload;
+      const board = state.boards[boardId];
+      if (board && board.columns[columnId]) {
+        board.columns[columnId].title = title;
       }
     }
   },
@@ -405,6 +438,24 @@ const boardsSlice = createSlice({
       }
     });
 
+    // Update Column (Local/Optimistic)
+    builder.addCase(updateColumn.fulfilled, (state, action) => {
+      const { boardId, columnId, title } = action.payload;
+      const board = state.boards[boardId];
+      if (board && board.columns[columnId]) {
+        board.columns[columnId].title = title;
+      }
+    });
+
+    // Update Board
+    builder.addCase(updateBoard.fulfilled, (state, action) => {
+        const { boardId, updates } = action.payload;
+        const board = state.boards[boardId];
+        if (board) {
+            Object.assign(board, updates);
+        }
+    });
+
     // Reorder Column
     builder.addCase(reorderColumn.fulfilled, (state, action) => {
       const { boardId, columnOrder, log } = action.payload;
@@ -431,6 +482,7 @@ export const {
   socketMemberUpdated,
   socketMemberRemoved,
   socketColumnAdded,
+  socketColumnUpdated,
 } = boardsSlice.actions;
 
 export default boardsSlice.reducer;

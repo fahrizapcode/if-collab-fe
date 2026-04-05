@@ -44,10 +44,12 @@ export default function Profile({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Update newName when user is finally loaded
+  // Initialize and sync newName from Redux ONLY when not in editing mode
   useEffect(() => {
-    if (user && !newName) setNewName(user.name);
-  }, [user, newName]);
+    if (user && !isEditingName) {
+      setNewName(user.name);
+    }
+  }, [user, isEditingName]);
 
   /* AVATAR LOGIC */
   const [avatarTimestamp, setAvatarTimestamp] = useState(Date.now());
@@ -85,7 +87,14 @@ export default function Profile({
   };
 
   const handleUpdateName = async () => {
-    if (!newName.trim()) return;
+    if (!newName.trim()) {
+      showToast("Nama tidak boleh kosong", "error");
+      return;
+    }
+    if (newName.trim() === user?.name) {
+      setIsEditingName(false);
+      return;
+    }
     setNameLoading(true);
     try {
       await usersService.updateProfile({ name: newName.trim() });
@@ -104,6 +113,10 @@ export default function Profile({
       return;
     }
     if (!newPassword || !oldPassword) return;
+    if (newPassword.length < 8) {
+      setPwError("Password baru minimal 8 karakter!");
+      return;
+    }
 
     setPwLoading(true);
     setPwError(null);
@@ -225,8 +238,13 @@ export default function Profile({
               type="text"
               value={isEditingName ? newName : (user?.name || "")}
               onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleUpdateName();
+                if (e.key === "Escape") setIsEditingName(false);
+              }}
               readOnly={!isEditingName}
               className="flex-1 outline-none bg-transparent"
+              autoFocus={isEditingName}
             />
 
             {isEditingName ? (

@@ -11,8 +11,10 @@ import { ActiveComponent } from "@/types/types";
 import { User } from "@/types/typesUser";
 import { usersService } from "@/lib/services/users.service";
 import { invitationsService } from "@/lib/services/invitations.service";
+import { notificationsService } from "@/lib/services/notifications.service";
 import { boardsService } from "@/lib/services/boards.service";
 import { setBoards } from "@/store/boardsSlice";
+import { setNotifications, markNotificationRead } from "@/store/userSlice";
 
 interface NotificationProps {
   isOpen: boolean;
@@ -20,12 +22,14 @@ interface NotificationProps {
 }
 
 import UserAvatar from "./UserAvatar";
+import { useUI } from "@/components/providers/UIProvider";
 
 export default function Notification({
   isOpen,
   setIsActiveComponent,
 }: NotificationProps) {
   const dispatch = useAppDispatch();
+  const { showToast } = useUI();
 
   const currentUser = useSelector(
     (state: RootState) => state.user.currentUser,
@@ -37,27 +41,40 @@ export default function Notification({
     if (invitationId) {
       try {
         await invitationsService.respond(invitationId, 'accepted');
+        
+        // Refresh notifications to show the updated text immediately
+        const updatedNotifs = await notificationsService.getAll();
+        dispatch(setNotifications(updatedNotifs));
+
         // Re-fetch boards to show the new project immediately
         const updatedBoards = await boardsService.getAll();
         dispatch(setBoards(updatedBoards));
-        
-        // Optional: show a success message or redirect
-      } catch (err) {
+
+        showToast("Undangan diterima", "success");
+      } catch (err: any) {
+        const msg = err.response?.data?.message || "Gagal menerima undangan";
+        showToast(msg, "error");
         console.error("Failed to accept invitation", err);
       }
     }
-    dispatch(deleteNotification({ notificationId: notifId }));
   };
 
   const handleReject = async (notifId: string, invitationId?: string) => {
     if (invitationId) {
       try {
         await invitationsService.respond(invitationId, 'rejected');
-      } catch (err) {
+
+        // Refresh notifications
+        const updatedNotifs = await notificationsService.getAll();
+        dispatch(setNotifications(updatedNotifs));
+
+        showToast("Undangan ditolak", "info");
+      } catch (err: any) {
+        const msg = err.response?.data?.message || "Gagal menolak undangan";
+        showToast(msg, "error");
         console.error("Failed to reject invitation", err);
       }
     }
-    dispatch(deleteNotification({ notificationId: notifId }));
   };
 
   const renderFormattedContent = (content: string) => {
@@ -79,74 +96,116 @@ export default function Notification({
   return (
     <div
       className={`${isOpen ? "block" : "hidden"
-        } absolute top-[8vh] right-6 w-[90%] max-w-[400px] bg-white border border-gray-300 z-30 rounded-md shadow-md`}
+        } absolute top-[8vh] right-6 w-[95vw] max-w-[420px] bg-white border border-gray-100 z-50 rounded-xl shadow-2xl overflow-hidden`}
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b">
-        <h2 className="font-semibold text-lg">Notifikasi</h2>
+      <div className="flex justify-between items-center px-5 py-4 border-b border-gray-50 bg-gray-50/50">
+        <h2 className="font-bold text-gray-800 text-lg">Notifikasi</h2>
 
-        <div className="flex items-center gap-2">
-          <span className="bg-purple-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-            {notifications.length}
-          </span>
+        <div className="flex items-center gap-3">
+          {notifications.some(n => !n.read) && (
+            <button 
+              onClick={async () => {
+                try {
+                  await notificationsService.markAllRead();
+                  const updated = await notificationsService.getAll();
+                  dispatch(setNotifications(updated));
+                } catch (err) { console.error(err); }
+              }}
+              className="text-xs text-purple-600 hover:text-purple-700 font-medium"
+            >
+              Tandai semua dibaca
+            </button>
+          )}
 
-          <Image
-            onClick={() => setIsActiveComponent(null)}
-            className="text-gray-500 hover:text-gray-700 font-bold rotate-45 cursor-pointer"
-            alt="Close"
-            width={30}
-            height={30}
-            src={"/icons/add.svg"}
-          />
+          <div className="flex items-center gap-1.5">
+            <span className="bg-purple-600 text-white text-[10px] font-bold rounded-full px-2 py-0.5 min-w-[20px] text-center">
+              {notifications.length}
+            </span>
+
+            <Image
+              onClick={() => setIsActiveComponent(null)}
+              className="text-gray-400 hover:text-gray-600 transition-transform hover:rotate-[135deg] cursor-pointer"
+              alt="Close"
+              width={24}
+              height={24}
+              src={"/icons/add.svg"}
+            />
+          </div>
         </div>
       </div>
 
       {/* Notification List */}
-      <div className="flex flex-col max-h-[60vh] overflow-y-auto">
+      <div className="flex flex-col max-h-[70vh] overflow-y-auto custom-scrollbar">
         {notifications.map((notif) => {
-          const isInvitation = notif.content.startsWith("Kamu diundang");
+          const isInvitation = notif.content.includes("diundang");
+          const isResponded = notif.content.includes("sudah menerima") || notif.content.includes("sudah menolak");
 
           return (
             <div
               key={notif.id}
-              className="flex gap-3 p-4 border-b last:border-b-0"
+              onClick={async () => {
+                if (!notif.read) {
+                  try {
+                    await notificationsService.markRead(notif.id);
+                    dispatch(markNotificationRead({ notificationId: notif.id }));
+                  } catch (err) { console.error(err); }
+                }
+              }}
+              className={`flex gap-3 p-4 border-b border-gray-50 cursor-pointer transition-colors ${
+                !notif.read ? "bg-purple-50/40 hover:bg-purple-50" : "hover:bg-gray-50"
+              }`}
             >
-              <UserAvatar
-                userId={notif.actor_id || currentUser?.id || ""}
-                userName="User"
-                hasAvatar={notif.actor_has_avatar}
-                size={48}
-              />
+              <div className="relative">
+                <UserAvatar
+                  userId={notif.actor_id || ""}
+                  userName="User"
+                  hasAvatar={notif.actor_has_avatar}
+                  size={42}
+                />
+                {!notif.read && (
+                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-blue-500 border-2 border-white rounded-full"></span>
+                )}
+              </div>
 
-              <div className="flex-1 flex flex-col">
-                <p className="text-sm">
+              <div className="flex-1 flex flex-col min-w-0">
+                <p className={`text-sm leading-relaxed ${!notif.read ? "font-semibold text-gray-900" : "text-gray-600"}`}>
                   {renderFormattedContent(notif.content)}
                 </p>
 
-                <span className="text-xs text-gray-400 mt-1">
-                  {new Date(notif.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                  {" • "}
-                  <span className="italic">{notif.board_title}</span>
-                </span>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <span className="text-[11px] text-gray-400 font-medium">
+                    {new Date(notif.created_at).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded italic">
+                    {notif.board_title}
+                  </span>
+                </div>
 
-                {(isInvitation || notif.invitation_id) && (
-                  <div className="flex gap-2 mt-2">
+                {isInvitation && !isResponded && notif.invitation_id && (
+                  <div className="flex gap-2 mt-3" onClick={e => e.stopPropagation()}>
                     <button
-                      className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm"
+                      className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold shadow-sm transition"
                       onClick={() => handleAccept(notif.id, notif.invitation_id)}
                     >
                       Terima
                     </button>
 
                     <button
-                      className="border border-gray-300 px-3 py-1 rounded-md text-sm"
+                      className="border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 px-4 py-1.5 rounded-lg text-xs font-semibold transition"
                       onClick={() => handleReject(notif.id, notif.invitation_id)}
                     >
                       Tolak
                     </button>
+                  </div>
+                )}
+                
+                {isResponded && (
+                  <div className="mt-2 py-1 px-2 bg-gray-50 border border-gray-100 rounded text-[11px] text-gray-500 font-medium w-fit">
+                    Undangan telah diproses
                   </div>
                 )}
               </div>
@@ -155,7 +214,12 @@ export default function Notification({
         })}
 
         {notifications.length === 0 && (
-          <p className="text-center text-gray-400 p-4">Tidak ada notifikasi</p>
+          <div className="flex flex-col items-center justify-center p-12 text-center">
+            <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+              <Image src="/icons/add.svg" alt="empty" width={24} height={24} className="opacity-20 rotate-45" />
+            </div>
+            <p className="text-sm text-gray-400">Tidak ada notifikasi baru untuk Anda</p>
+          </div>
         )}
       </div>
     </div>

@@ -13,12 +13,14 @@ interface Props {
   task: Task;
   setIsActiveComponent: React.Dispatch<React.SetStateAction<ActiveComponent>>;
   setActiveTaskId: React.Dispatch<React.SetStateAction<string>>;
+  canMoveTask?: boolean;
 }
 
 export default function SortableTaskCard({
   task,
   setIsActiveComponent,
   setActiveTaskId,
+  canMoveTask = true,
 }: Props) {
   const {
     setNodeRef,
@@ -27,7 +29,7 @@ export default function SortableTaskCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: task.id });
+  } = useSortable({ id: task.id, disabled: !canMoveTask });
 
   const style = {
     transform: CSS.Transform.toString(transform),

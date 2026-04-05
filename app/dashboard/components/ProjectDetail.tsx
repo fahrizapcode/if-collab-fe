@@ -12,7 +12,7 @@ import {
     reorderColumn,
     updateColumn,
     updateMemberRole,
-    updateBoardMeta,
+    updateBoard,
     removeMember,
     deleteBoard,
     setBoards,
@@ -48,6 +48,7 @@ export default function ProjectDetail({
     const [editingColumnId, setEditingColumnId] = useState<string | null>(null);
     const [editingTitle, setEditingTitle] = useState("");
     const [search, setSearch] = useState("");
+    const [localTitle, setLocalTitle] = useState("");
     const [pendingInviteeIds, setPendingInviteeIds] = useState<string[]>([]);
 
     const dispatch = useAppDispatch();
@@ -61,6 +62,17 @@ export default function ProjectDetail({
     const memberIds = activeBoard ? activeBoard.members.map((m) => m.userId) : [];
 
     const isMinStatus = (activeBoard?.columnOrder?.length ?? 0) <= 3;
+    const leaderCount = useMemo(() =>
+        activeBoard?.members.filter(m => m.role === 'leader').length || 0,
+        [activeBoard?.members]
+    );
+
+    // Sync local title when board title changes
+    useEffect(() => {
+        if (activeBoard?.title) {
+            setLocalTitle(activeBoard.title);
+        }
+    }, [activeBoard?.id, activeBoard?.title]);
 
     /* =========================
      SELECTORS
@@ -197,15 +209,20 @@ export default function ProjectDetail({
                 />
                 {canEditDetails ? (
                     <input
-                        value={activeBoard.title}
-                        onChange={(e) =>
-                            dispatch(
-                                updateBoardMeta({
-                                    boardId: activeBoard.id,
-                                    title: e.target.value,
-                                }),
-                            )
-                        }
+                        value={localTitle}
+                        onChange={(e) => setLocalTitle(e.target.value)}
+                        onBlur={() => {
+                            if (localTitle.trim() && localTitle !== activeBoard.title) {
+                                dispatch(
+                                    updateBoard({
+                                        boardId: activeBoard.id,
+                                        updates: { title: localTitle.trim() },
+                                    }),
+                                );
+                            } else {
+                                setLocalTitle(activeBoard.title);
+                            }
+                        }}
                         className="text-lg sm:text-xl font-semibold bg-transparent border-none outline-none focus:ring-2 focus:ring-purple-200 rounded px-1 transition-all w-full"
                     />
                 ) : (
@@ -261,9 +278,9 @@ export default function ProjectDetail({
                         }
                         onChange={(e) =>
                             dispatch(
-                                updateBoardMeta({
+                                updateBoard({
                                     boardId: activeBoard.id,
-                                    deadline: e.target.value,
+                                    updates: { deadline: e.target.value },
                                 }),
                             )
                         }
@@ -288,9 +305,9 @@ export default function ProjectDetail({
                         disabled={!canEditDetails}
                         onChange={(e) =>
                             dispatch(
-                                updateBoardMeta({
+                                updateBoard({
                                     boardId: activeBoard.id,
-                                    description: e.target.value,
+                                    updates: { description: e.target.value },
                                 }),
                             )
                         }
@@ -357,6 +374,11 @@ export default function ProjectDetail({
                                 <button
                                     onClick={() => {
                                         if (!newStatusTitle.trim()) return;
+
+                                        if (activeBoard.columnOrder.length >= 10) {
+                                            showToast("Maksimal 10 status telah tercapai", "error");
+                                            return;
+                                        }
 
                                         dispatch(
                                             addColumn({
@@ -632,15 +654,20 @@ export default function ProjectDetail({
                                                 <select
                                                     value={role}
                                                     disabled={!canManageMembers || (isManager && role === 'leader')}
-                                                    onChange={(e) =>
-                                                        dispatch(
-                                                            updateMemberRole({
-                                                                boardId: activeBoard.id,
-                                                                memberId: user.id,
-                                                                role: e.target.value as Role,
-                                                            }),
-                                                        )
+                                                onChange={(e) => {
+                                                    const newRole = e.target.value as Role;
+                                                    if (user.id === authUser?.id && role === 'leader' && newRole !== 'leader' && leaderCount <= 1) {
+                                                        showToast("Anda harus menunjuk Ketua lain sebelum mengubah peran Anda.", "error");
+                                                        return;
                                                     }
+                                                    dispatch(
+                                                        updateMemberRole({
+                                                            boardId: activeBoard.id,
+                                                            memberId: user.id,
+                                                            role: newRole,
+                                                        }),
+                                                    );
+                                                }}
                                                     className="
                     w-36
                     bg-gray-50
@@ -659,22 +686,26 @@ export default function ProjectDetail({
                                                     <option value="observer">Pengamat</option>
                                                 </select>
 
-                                                {canManageMembers && !(isManager && role === 'leader') && (
+                                                {canManageMembers && String(user.id) !== String(authUser?.id) && !(isManager && role === 'leader') && (
                                                     <button
-                                                        onClick={() =>
+                                                        onClick={() => {
+                                                            if (role === 'leader' && leaderCount <= 1) {
+                                                                showToast("Minimal harus ada satu Ketua di dalam proyek", "error");
+                                                                return;
+                                                            }
                                                             dispatch(
                                                                 removeMember({
                                                                     boardId: activeBoard.id,
                                                                     memberId: user.id,
                                                                 }),
-                                                            )
-                                                        }
+                                                            );
+                                                        }}
                                                         className="
-                      text-red-500
-                      hover:text-red-600
-                      text-xs
-                      font-medium
-                    "
+                                                      text-red-500
+                                                      hover:text-red-600
+                                                      text-xs
+                                                      font-medium
+                                                    "
                                                     >
                                                         Hapus
                                                     </button>
@@ -724,15 +755,20 @@ export default function ProjectDetail({
                                             <select
                                                 value={role}
                                                 disabled={!canManageMembers || (isManager && role === 'leader')}
-                                                onChange={(e) =>
+                                                onChange={(e) => {
+                                                    const newRole = e.target.value as Role;
+                                                    if (user.id === authUser?.id && role === 'leader' && newRole !== 'leader' && leaderCount <= 1) {
+                                                        showToast("Anda harus menunjuk Ketua lain sebelum mengubah peran Anda.", "error");
+                                                        return;
+                                                    }
                                                     dispatch(
                                                         updateMemberRole({
                                                             boardId: activeBoard.id,
                                                             memberId: user.id,
-                                                            role: e.target.value as Role,
+                                                            role: newRole,
                                                         }),
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                                 className="
                   flex-1
                   bg-gray-50
@@ -751,21 +787,25 @@ export default function ProjectDetail({
                                                 <option value="observer">Pengamat</option>
                                             </select>
 
-                                            {canManageMembers && !(isManager && role === 'leader') && (
+                                            {canManageMembers && String(user.id) !== String(authUser?.id) && !(isManager && role === 'leader') && (
                                                 <button
-                                                    onClick={() =>
+                                                    onClick={() => {
+                                                        if (role === 'leader' && leaderCount <= 1) {
+                                                            showToast("Minimal harus ada satu Ketua di dalam proyek", "error");
+                                                            return;
+                                                        }
                                                         dispatch(
                                                             removeMember({
                                                                 boardId: activeBoard.id,
                                                                 memberId: user.id,
                                                             }),
-                                                        )
-                                                    }
+                                                        );
+                                                    }}
                                                     className="
-                    text-red-500
-                    text-xs
-                    font-medium
-                  "
+                                                    text-red-500
+                                                    text-xs
+                                                    font-medium
+                                                  "
                                                 >
                                                     Hapus
                                                 </button>

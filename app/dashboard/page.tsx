@@ -11,6 +11,7 @@ import { authService } from "@/lib/services/auth.service";
 import { usersService } from "@/lib/services/users.service";
 import { setUser } from "@/store/userSlice";
 import { setUsers } from "@/store/usersSlice";
+import { getSocket } from "@/lib/socket";
 
 import ClickableIcon from "@/components/ui/ClickableIcon";
 
@@ -170,7 +171,33 @@ export default function DashboardPage() {
     usersService.search().then((allUsers) => {
       dispatch(setUsers(allUsers));
     });
+
+    // 4. Global Socket Listeners (Notifications)
+    const socket = getSocket();
+    
+    socket.on('notification:new', (notif: any) => {
+       // Filter locally to ensure the notification is intended for the current user
+       // (This prevents the inviter from seeing their own invite if sessions are shared or backend broadcasts)
+       if (notif.userId !== currentUser?.id) return;
+
+       import("@/store/userSlice").then(mod => {
+         dispatch(mod.addNotification(notif));
+       });
+    });
+
+    return () => {
+      socket.off('notification:new');
+    };
   }, [dispatch]);
+
+  // Handle Socket User Room Join
+  const currentUser = useAppSelector(state => state.user.currentUser);
+  useEffect(() => {
+    if (currentUser?.id) {
+       const socket = getSocket();
+       socket.emit('join:user', currentUser.id);
+    }
+  }, [currentUser?.id]);
 
 
 
@@ -242,6 +269,7 @@ export default function DashboardPage() {
         isOpen={isActiveComponent === "addProject"}
         setIsActiveComponent={setIsActiveComponent}
         setIsActiveOverlay={setIsActiveOverlay}
+        setIsBoardView={setIsBoardView}
       />
 
       {/* OVERLAY */}

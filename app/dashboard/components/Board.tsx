@@ -31,6 +31,7 @@ import {
   socketMemberUpdated,
   socketMemberRemoved,
   socketColumnAdded,
+  socketColumnUpdated,
 } from "@/store/boardsSlice";
 import { getSocket, joinBoard, leaveBoard } from "@/lib/socket";
 import { reorder, findColumnByTaskId } from "../helpers";
@@ -106,6 +107,7 @@ export default function Board({
     socket.on('member:added', (data) => dispatch(socketMemberAdded({ boardId: board.id, ...data })));
     socket.on('member:updated', (data) => dispatch(socketMemberUpdated({ boardId: board.id, ...data })));
     socket.on('member:removed', (data) => dispatch(socketMemberRemoved({ boardId: board.id, ...data })));
+    socket.on('column:updated', (data) => dispatch(socketColumnUpdated({ boardId: board.id, ...data })));
 
     // socket.on('column:added', (data) => dispatch(socketColumnAdded({ boardId: board.id, ...data }))); // If backend supports it later
 
@@ -118,6 +120,7 @@ export default function Board({
       socket.off('member:added');
       socket.off('member:updated');
       socket.off('member:removed');
+      socket.off('column:updated');
     };
   }, [board?.id, dispatch]);
 
@@ -272,6 +275,18 @@ export default function Board({
             },
           };
         });
+
+        // Simpan urutan baru ke backend (Reorder dalam kolom yang sama)
+        dispatch(
+          moveTask({
+            boardId: board.id,
+            taskId: activeId,
+            fromColumnId: sourceColumn.id,
+            toColumnId: targetColumn.id, // target === source
+            toIndex: to,
+            actor: "You",
+          }),
+        );
       }
 
       return;
@@ -294,7 +309,7 @@ export default function Board({
 
 
   return (
-    <div className="flex flex-1 flex-col overflow-x-auto scrollbar-stable bg-lp h-[100dvh] w-1 ">
+    <div className="flex flex-1 flex-col overflow-x-auto scrollbar-stable bg-lp h-[100dvh] w-full">
       {/* Header */}
       <div
         className="
@@ -332,6 +347,9 @@ export default function Board({
           size={26}
           onClick={() => setIsActiveComponent("projectDetail")}
         />
+        {userRole === 'observer' && (
+           <span className="ml-2 bg-white/20 text-white text-xs px-2 py-1 rounded-md font-medium border border border-white/30 truncate">Mode Pengamat</span>
+        )}
       </div>
 
       {/* Content */}
@@ -372,6 +390,7 @@ export default function Board({
                             task={board.tasks[taskId]}
                             setIsActiveComponent={setIsActiveComponent}
                             setActiveTaskId={setActiveTaskId}
+                            canMoveTask={!!canMoveTask}
                           />
                         ))}
                       </div>
@@ -388,6 +407,7 @@ export default function Board({
                 task={activeTask}
                 setIsActiveComponent={setIsActiveComponent}
                 setActiveTaskId={setActiveTaskId}
+                canMoveTask={!!canMoveTask}
               />
             )}
           </DragOverlay>

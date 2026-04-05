@@ -125,23 +125,44 @@ export default function AdminDashboard() {
     setShowUserForm(false);
   };
 
-  const handleSubmitUser = () => {
-    if (!newName || !newNim || !newPassword) return;
-
-    if (isEditing) {
-      console.log("Update user API call here");
-    } else {
-      console.log("Add user API call here");
+  const handleSubmitUser = async () => {
+    if (!newName || !newNim) {
+      showToast("Nama dan NIM/NIP harus diisi", "error");
+      return;
+    }
+    if (!isEditing && !newPassword) {
+      showToast("Password harus diisi untuk user baru", "error");
+      return;
     }
 
-    resetForm();
+    try {
+      if (isEditing) {
+        await adminService.updateUser(editingNim, {
+          name: newName,
+          nim_nip: newNim,
+          ...(newPassword ? { password: newPassword } : {})
+        });
+        showToast("User berhasil diperbarui", "success");
+      } else {
+        await adminService.createUser({
+          name: newName,
+          nim_nip: newNim,
+          password: newPassword
+        });
+        showToast("User berhasil ditambahkan", "success");
+      }
+      resetForm();
+      fetchData(); // Refresh list
+    } catch (error: any) {
+      showToast(error.response?.data?.message || "Gagal menyimpan user", "error");
+    }
   };
 
-  const handleEditUser = (user: PublicUser) => {
+  const handleEditUser = (user: any) => {
     setIsEditing(true);
     setEditingNim(user.id);
     setNewName(user.name);
-    setNewNim(user.nim_nip);
+    setNewNim(user.nim_nip || user.nimNip || "");
     setNewPassword(""); // Reset password on edit
     setShowUserForm(true); // otomatis munculkan form saat edit
   };
@@ -372,9 +393,14 @@ export default function AdminDashboard() {
                               message: `Apakah Anda yakin ingin menghapus user "${user.name}"?`,
                               confirmLabel: "Ya, Hapus",
                               type: "danger",
-                              onConfirm: () => {
-                                console.log("Remove user API call for", user.id);
-                                showToast(`User ${user.name} berhasil dihapus (simulasi)`, "success");
+                              onConfirm: async () => {
+                                try {
+                                  await adminService.deleteUser(user.id);
+                                  fetchData();
+                                  showToast(`User ${user.name} berhasil dihapus`, "success");
+                                } catch (error: any) {
+                                  showToast(error.response?.data?.message || "Gagal menghapus user", "error");
+                                }
                               }
                             });
                           }}
